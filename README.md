@@ -11,47 +11,32 @@
 
 Show drive device id, DSM number, model and serial number for all drives in your Synology NAS
 
-### Download the script
+### How to install the package
 
-1. Download the latest version _Source code (zip)_ from https://github.com/007revad/Synology_drive_info/releases
-2. Save the download zip file to a folder on the Synology.
-3. Unzip the zip file.
+There are 2 ways to install the package:
 
-### To run the script via task scheduler
+**Directly from Package Center**
 
-See [How to run from task scheduler](https://github.com/007revad/Synology_drive_info/blob/main/how_to_run_from_scheduler.md)
+1. Add [007revad Synology Package Source](https://github.com/007revad/Synology_package_source) to package Center.
+2. Click on the Community section in Package Center and install the package.
 
-### To run the script via SSH
-
-[How to enable SSH and login to DSM via SSH](https://kb.synology.com/en-global/DSM/tutorial/How_to_login_to_DSM_with_root_permission_via_SSH_Telnet)
-
-```YAML
-sudo -s /volume1/scripts/drive_info.sh
-```
-
-**Note:** Replace /volume1/scripts/ with the path to where the script is located.
-
-### Troubleshooting
-
-If the script won't run check the following:
-
-1. Make sure you download the zip file and unzipped it to a folder on your Synology (not on your computer).
-2. If the path to the script contains any spaces you need to enclose the path/scriptname in double quotes:
-   ```YAML
-   sudo -s "/volume1/my scripts/drive_info.sh"
-   ```
-3. Make sure you unpacked the zip or rar file that you downloaded and are trying to run the drive_info.sh file.
-4. Set the script file as executable:
-   ```YAML
-   sudo chmod +x "/volume1/scripts/drive_info.sh"
-   ```
+**Or download the package and install it manually**
+1. Download the latest version .spk file from https://github.com/007revad/Synology_drive_info/releases and save it to your Synology.
+2. In Package Center click on Manual Install.
+3. Browse to where you downloaded the .spk file.
+4. Select the .spk file and click Next.
 
 ### Screenshots
 
 <!--- <p align="center">Description of image 1 goes here</p> --->
-<p align="center"><img src="/images/IMAGE_NAME.png"></p>
+<p align="center"><img src="/images/installed.png"></p>
 
 <br>
 
-<!--- <p align="center">Description of image 2 goes here</p> --->
-<p align="center"><img src="/images/IMAGE_NAME.png"></p>
+<!--- <p align="center">Description of image 1 goes here</p> --->
+<p align="center"><img src="/images/window.png"></p>
+
+<!--- <br> --->
+
+<!--- <p align="center">Notification from dsm_update.sh script</p> --->
+<!--- <p align="center"><img src="/images/notification.png"></p> --->
