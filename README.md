@@ -30,12 +30,12 @@ There are 2 ways to install the package:
 
 ### Screenshots
 
-<!--- <p align="center">Description of image 1 goes here</p> --->
+<p align="center">Temporay screenshot sample</p>
 <p align="center"><img src="/images/installed.png"></p>
 
 <br>
 
-<!--- <p align="center">Description of image 1 goes here</p> --->
+<p align="center">Temporay screenshot sample</p>
 <p align="center"><img src="/images/window.png"></p>
 
 <!--- <br> --->
