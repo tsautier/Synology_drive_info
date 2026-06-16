@@ -1,3 +1,7 @@
+v1.0.8
+- Added PCIe M.2 card model to M.2 drives that are in a PCIe card.
+- Adjusted column widths and added nowrap.
+
 v1.0.7
 - Changed font in table content.
 - Fixed steps to setting the permission.

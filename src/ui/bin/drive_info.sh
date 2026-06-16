@@ -59,6 +59,12 @@ get_nvme_num(){
         cardslot=""
     fi
     drive_num="M.2 Drive $pcislot$cardslot"
+
+    # Get PCIe M.2 card model (if the drive is in a PCIe M.2 card, not onboard)
+    m2_card="$(synonvme --m2-card-model-get /dev/"$drive")"
+    if ! echo "$m2_card" | grep -q 'Not M.2 adapter card'; then
+        drive_num="$drive_num ($m2_card)"
+    fi
 }
 
 # Add drives to drives array

@@ -21,18 +21,22 @@ pre  { background: #f4f4f4; border: 1px solid #ddd; border-radius: 4px;
        white-space: pre-wrap; word-break: break-all;
        box-sizing: border-box; max-width: 100%; }
 table { border-collapse: collapse; width: 100%;
-        box-sizing: border-box; table-layout: fixed;
+        box-sizing: border-box; table-layout: auto;
         font-family: Arial, sans-serif; font-size: 12px; }
-col.id     { width: 70px; }
-col.num    { width: 160px; }
-col.model  { width: 220px; }
-col.serial { width: auto; }
+col.id     { width: 12%; min-width: 65px; }
+col.num    { width: 27%; min-width: 170px; }
+col.model  { width: 27%; min-width: 140px; }
+col.serial { width: auto; min-width: 110px; }
+th.id, td.id         { white-space: nowrap; }
+th.num, td.num       { white-space: nowrap; }
+th.model, td.model   { white-space: nowrap; }
+th.serial, td.serial { white-space: nowrap; }
 th { text-align: left; padding: 5px 14px 5px 5px;
      border-bottom: 2px solid #ccc; color: #555;
      font-family: Arial, sans-serif; font-size: 12px; }
 td { padding: 5px 14px 5px 5px; border-bottom: 1px solid #eee; }
-.num    { color: #0073c0; font-weight: bold; }
-.serial { color: #b5800a; }
+td.num    { color: #0073c0; font-weight: bold; }
+td.serial { color: #b5800a; }
 .err    { color: #c00; }
 a { color: #0073c0; }
 </style>
@@ -52,7 +56,7 @@ if ! sudo -n -l "$SCRIPT" >/dev/null 2>&1; then
 <p>This package needs elevated permissions to read drive information.</p>
 <p>Connect to your NAS via SSH and run:</p>
 <pre>sudo -i
-echo "drive_info ALL=(ALL) NOPASSWD: $SCRIPT" \\
+echo "drive_info ALL=(root) NOPASSWD: $SCRIPT" \\
     &gt; $SUDOERS_FILE
 chmod 0440 $SUDOERS_FILE</pre>
 <p>Then close and reopen this window.</p>
@@ -113,8 +117,9 @@ while IFS= read -r line; do
         IFS=$'\n' read -r -d '' -a headers <<< "$(echo "$trimmed" | grep -oP '\S.*?(?=  |\s*$)')" || true
         col_count=${#headers[@]}
         echo "<thead><tr>"
-        for h in "${headers[@]}"; do
-            echo "<th>$(echo "$h" | sed 's/</\&lt;/g;s/>/\&gt;/g')</th>"
+        col_classes=("id" "num" "model" "serial")
+        for idx in "${!headers[@]}"; do
+            echo "<th class=\"${col_classes[$idx]:-}\">$(echo "${headers[$idx]}" | sed 's/</\&lt;/g;s/>/\&gt;/g')</th>"
         done
         echo "</tr></thead><tbody>"
         continue
@@ -127,8 +132,12 @@ while IFS= read -r line; do
         for (( c=0; c<col_count; c++ )); do
             val="${cells[$c]:-}"
             val="$(echo "$val" | sed 's/</\&lt;/g;s/>/\&gt;/g')"
-            if [[ $c -eq 1 ]]; then
+            if [[ $c -eq 0 ]]; then
+                echo "<td class=\"id\">$val</td>"
+            elif [[ $c -eq 1 ]]; then
                 echo "<td class=\"num\">$val</td>"
+            elif [[ $c -eq 2 ]]; then
+                echo "<td class=\"model\">$val</td>"
             elif [[ $c -eq 3 ]]; then
                 echo "<td class=\"serial\">$val</td>"
             else
