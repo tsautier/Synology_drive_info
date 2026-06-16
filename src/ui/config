@@ -2,7 +2,7 @@
   "drive_info.js": {
     "SYNO.SDS._ThirdParty.App.drive_info": {
       "type": "app",
-      "title": "DSM Info",
+      "title": "Drive Info",
       "desc": "DSM notification strings for scheduled 007revad scripts",
       "icon": "images/icon_{0}.png",
       "appWindow": "SYNO.SDS.drive_info.MainWindow",

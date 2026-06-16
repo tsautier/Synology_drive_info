@@ -99,7 +99,7 @@ jobs:
         if: steps.check_assets.outputs.spk_count == '0'
         uses: actions/upload-artifact@v4
         with:
-          name: Synology_drive_info-${{ steps.dsm_suffix.outputs.suffix }}
+          name: Drive_Info-${{ steps.dsm_suffix.outputs.suffix }}
           path: ./dist/*.spk
 
       - name: Release
