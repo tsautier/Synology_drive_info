@@ -22,7 +22,7 @@ pre  { background: #f4f4f4; border: 1px solid #ddd; border-radius: 4px;
        box-sizing: border-box; max-width: 100%; }
 table { border-collapse: collapse; width: 100%;
         box-sizing: border-box; table-layout: fixed;
-        font-family: Arial, sans-serif; font-size: 8px; }
+        font-family: Arial, sans-serif; font-size: 12px; }
 col.id     { width: 70px; }
 col.num    { width: 160px; }
 col.model  { width: 220px; }
