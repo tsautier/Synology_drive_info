@@ -39,7 +39,7 @@ There are 2 ways to install the package:
 <!--- <p align="center">Screenshot 2</p> -->
 <p align="center"><img src="/images/window.png"></p>
 
-<!--- <br> --->
+<br>
 
-<!--- <p align="center">Notification from dsm_update.sh script</p> --->
-<!--- <p align="center"><img src="/images/notification.png"></p> --->
+<!--- <p align="center">Screenshot 2</p> -->
+<p align="center"><img src="/images/window2.png"></p>
