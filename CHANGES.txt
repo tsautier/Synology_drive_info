@@ -1,5 +1,6 @@
 v1.0.10
 - Added support for the languages supported by DSM.
+- Bug fix for description being shown as the name.
 
 v1.0.9
 - Added support for the languages supported by DSM.
