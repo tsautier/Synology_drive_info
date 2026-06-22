@@ -9,7 +9,7 @@
 
 ### Description
 
-DSM package to show drive device id, DSM number, model and serial number for all drives in your Synology NAS.
+DSM package to show drive device id, DSM number, location, model, serial number and health for all drives in your Synology NAS.
   - Helps you map device ids in logs to the correct drive in Storage Manager.
 
 Available for DSM 7 and DSM 6.
