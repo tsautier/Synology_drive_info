@@ -29,3 +29,21 @@ status_unknown	=	Neznámý
 status_disabled	=	Zakázáno
 status	=	Stav
 loading	=	Načítání...
+
+[settings]
+settings	=	Nastavení
+port	=	Port
+remove	=	Odebrat
+save	=	Uložit
+back	=	Zpět
+searching	=	Hledání...
+saved	=	Ušetřeno
+hostname	=	Název hostitele
+ip_address	=	IP adresa
+add_device	=	Přidat zařízení
+mac_address	=	Adresa MAC
+discover_local_nas	=	Najít všechny místní NAS Synology
+discovering	=	Hledání NAS...
+manual_nas_list	=	Další NAS
+login_port	=	Port pro přihlášení
+cancel	=	Storno

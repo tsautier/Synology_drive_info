@@ -29,3 +29,21 @@ status_unknown	=	Onbekend
 status_disabled	=	Uitgeschakeld
 status	=	Status
 loading	=	Bezig met laden…
+
+[settings]
+settings	=	Instellingen
+port	=	Poort
+remove	=	Verwijderen
+save	=	Opslaan
+back	=	Terug
+searching	=	Bezig met zoeken…
+saved	=	Opgeslagen
+hostname	=	Hostnaam
+ip_address	=	Ip-adres
+add_device	=	Een apparaat toevoegen
+mac_address	=	MAC-adres
+discover_local_nas	=	Alle lokale Synology NAS's zoeken
+discovering	=	NAS zoeken...
+manual_nas_list	=	Extra NAS
+login_port	=	Inlogpoort
+cancel	=	Annuleren

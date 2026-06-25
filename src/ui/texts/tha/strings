@@ -29,3 +29,21 @@ status_unknown	=	ไม่ทราบ
 status_disabled	=	ปิดใช้งานอยู่
 status	=	สถานะ
 loading	=	กำลังโหลด...
+
+[settings]
+settings	=	การตั้งค่า
+port	=	พอร์ท
+remove	=	ลบ
+save	=	บันทึก
+back	=	ย้อนกลับ
+searching	=	กำลังค้นหา...
+saved	=	บันทึกแล้ว
+hostname	=	ชื่อโฮสต์
+ip_address	=	IP แอดเดรส
+add_device	=	เพิ่มอุปกรณ์
+mac_address	=	MAC แอดเดรส
+discover_local_nas	=	ค้นหา Synology NAS ในเครือข่ายท้องถิ่นทั้งหมด
+discovering	=	กำลังค้นหา NAS...
+manual_nas_list	=	NAS เพิ่มเติม
+login_port	=	พอร์ตการลงชื่อเข้าใช้
+cancel	=	ยกเลิก

@@ -1,3 +1,11 @@
+v2.0.19
+- Can now show you the drive information for all local Synology NAS.
+  - It can find all local Synology NAS itself.
+  - Requires all local Synology NAS to have Drive Info v2 or later installed.
+- Added a Settings menu where you can:
+  - Enable or Disable showing drive info for all local Synology NAS.
+  - Manually add local Synology NAS by hostname, IP and port (in case you only want to drive information for certain NAS and not all local Synology NAS).
+
 v1.0.18
 - Improved sorting of drives when NAS has more than 9 drives.
 - Updated to show PCIe M.2 card model if M.2 SATA drive is in M2D18 or M2D17.

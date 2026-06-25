@@ -29,3 +29,21 @@ status_unknown	=	Unknown
 status_disabled	=	Disabled
 status	=	Status
 loading	=	Loading...
+
+[settings]
+settings	=	Settings
+port	=	Port
+remove	=	Remove
+save	=	Save
+back	=	Back
+searching	=	Searching...
+saved	=	Saved
+hostname	=	Hostname
+ip_address	=	IP Address
+add_device	=	Add a Device
+mac_address	=	MAC Address
+discover_local_nas	=	Find all local Synology NAS
+discovering	=	Discovering NAS...
+manual_nas_list	=	Additional NAS
+login_port	=	Login port
+cancel	=	Cancel

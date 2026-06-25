@@ -29,3 +29,21 @@ status_unknown	=	Unbekannt
 status_disabled	=	Deaktiviert
 status	=	Status
 loading	=	Wird geladen...
+
+[settings]
+settings	=	Einstellungen
+port	=	Port
+remove	=	Entfernen
+save	=	Speichern
+back	=	Zurück
+searching	=	Wird gesucht...
+saved	=	Gespeichert
+hostname	=	Hostname
+ip_address	=	IP-Adresse
+add_device	=	Gerät hinzufügen
+mac_address	=	MAC Adresse
+discover_local_nas	=	Alle lokalen Synology NAS finden
+discovering	=	NAS werden gesucht...
+manual_nas_list	=	Weitere NAS
+login_port	=	Port für Anmeldung
+cancel	=	Abbrechen

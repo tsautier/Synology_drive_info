@@ -29,3 +29,21 @@ status_unknown	=	Ismeretlen
 status_disabled	=	Le van tiltva
 status	=	Állapot
 loading	=	Betöltés...
+
+[settings]
+settings	=	Beállítások
+port	=	Port
+remove	=	Eltávolítás
+save	=	Mentés
+back	=	Vissza
+searching	=	Keresés...
+saved	=	Megtakarított
+hostname	=	Gazdanév
+ip_address	=	IP-cím
+add_device	=	Eszköz hozzáadása
+mac_address	=	MAC-cím
+discover_local_nas	=	Összes helyi Synology NAS megkeresése
+discovering	=	NAS keresése...
+manual_nas_list	=	További NAS
+login_port	=	Bejelentkezési port
+cancel	=	Mégse

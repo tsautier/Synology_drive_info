@@ -29,3 +29,21 @@ status_unknown	=	不明
 status_disabled	=	無効
 status	=	ステータス
 loading	=	読み込み中...
+
+[settings]
+settings	=	設定
+port	=	ポート
+remove	=	削除
+save	=	保存
+back	=	戻る
+searching	=	検索中...
+saved	=	保存済み
+hostname	=	ホスト名
+ip_address	=	IP アドレス
+add_device	=	デバイスを追加
+mac_address	=	MAC アドレス
+discover_local_nas	=	すべてのローカル Synology NAS を検索
+discovering	=	NAS を探索中...
+manual_nas_list	=	その他の NAS
+login_port	=	ログイン ポート
+cancel	=	キャンセル

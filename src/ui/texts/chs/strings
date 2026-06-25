@@ -30,3 +30,21 @@ status_unknown	=	未知
 status_disabled	=	已停用
 status	=	状态
 loading	=	加载中...
+
+[settings]
+settings	=	设置
+port	=	端口
+remove	=	删除
+save	=	保存
+back	=	上一步
+searching	=	搜索中...
+saved	=	已保存
+hostname	=	主机名
+ip_address	=	IP 地址
+add_device	=	添加设备
+mac_address	=	MAC 地址
+discover_local_nas	=	查找所有本地 Synology NAS
+discovering	=	正在发现 NAS...
+manual_nas_list	=	其他 NAS
+login_port	=	登录端口
+cancel	=	取消

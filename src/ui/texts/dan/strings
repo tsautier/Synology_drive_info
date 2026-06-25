@@ -29,3 +29,21 @@ status_unknown	=	Ukendt
 status_disabled	=	Deaktiveret
 status	=	Status
 loading	=	Indlæser...
+
+[settings]
+settings	=	Indstillinger
+port	=	Port
+remove	=	Fjern
+save	=	Gem
+back	=	Tilbage
+searching	=	Søger efter...
+saved	=	Gemt
+hostname	=	Værtsnavn
+ip_address	=	IP-adresse
+add_device	=	Tilføj en enhed
+mac_address	=	MAC-adresse
+discover_local_nas	=	Find alle lokale Synology NAS
+discovering	=	Søger efter NAS...
+manual_nas_list	=	Yderligere NAS
+login_port	=	Login-port.
+cancel	=	Annuller

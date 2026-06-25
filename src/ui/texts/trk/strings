@@ -29,3 +29,21 @@ status_unknown	=	Bilinmeyen
 status_disabled	=	Etkisiz
 status	=	Status
 loading	=	Yükleniyor...
+
+[settings]
+settings	=	Ayarlar
+port	=	Bağlantı Noktası
+remove	=	Kaldır
+save	=	Kaydet
+back	=	Geri
+searching	=	Aranıyor...
+saved	=	Kaydedildi
+hostname	=	Ana bilgisayar adı
+ip_address	=	IP Adresi
+add_device	=	Bir Aygıt Ekle
+mac_address	=	MAC Adresi
+discover_local_nas	=	Tüm yerel Synology NAS'ları bul
+discovering	=	NAS aranıyor...
+manual_nas_list	=	Ek NAS
+login_port	=	Oturum açma bağlantı noktası
+cancel	=	İptal
