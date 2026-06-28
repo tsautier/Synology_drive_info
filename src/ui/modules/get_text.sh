@@ -20,11 +20,18 @@
 _get_text_module_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 _get_text_ui_dir="$(dirname "${_get_text_module_dir}")"
 
-gui_lang="$(get_key_value /etc/synoinfo.conf maillang 2>/dev/null)"
+
+# Check if 1st argument is a DSM language code
+if [[ $1 =~ chs|cht|csy|dan|enu|fre|ger|hun|ita|jpn|krn|nld|nor|plk|ptb|ptg|rus|spn|sve|tha|trk ]]; then
+    gui_lang="$1"
+else
+    gui_lang="$(get_key_value /etc/synoinfo.conf maillang 2>/dev/null)"
+fi
+
 strings_file="${_get_text_ui_dir}/texts/${gui_lang}/strings"
 [[ -f "${strings_file}" ]] || strings_file="${_get_text_ui_dir}/texts/enu/strings"
 
-txt() {
+txt(){ 
     local section="$1" key="$2" default="$3" value=""
     if [[ -f "${strings_file}" ]] && command -v get_section_key_value >/dev/null 2>&1; then
         value="$(get_section_key_value "${strings_file}" "${section}" "${key}" 2>/dev/null)"

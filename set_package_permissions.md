@@ -6,9 +6,19 @@ There are 2 ways you can set the required permissions for the package.
 
 ```
 sudo -i
-echo "drive_info ALL=(ALL) NOPASSWD: /var/packages/drive_info/target/ui/bin/drive_info.sh" > /etc/sudoers.d/drive_info
-chmod 0440 /etc/sudoers.d/drive_info
-cat /etc/sudoers.d/drive_info
+pkg=drive_info
+file=/etc/sudoers.d/drive_info
+script=/var/packages/drive_info/target/ui/bin/drive_info.sh
+pkg=drive_info
+file=/etc/sudoers.d/drive_info
+script=/var/packages/drive_info/target/ui/bin/drive_info.sh
+echo -n "" > "$file"
+for lang in chs cht csy dan enu fre ger hun ita jpn krn nld nor plk ptb ptg rus spn sve tha trk; do
+    echo "$pkg ALL=(root) NOPASSWD: $script $lang" >> "$file"
+done
+echo "$pkg ALL=(root) NOPASSWD: $script" >> "$file"
+chmod 0440 "$file"
+cat "$file"
 ```
 
 ### Set package permissions in Synology Task Scheduler
@@ -24,7 +34,14 @@ cat /etc/sudoers.d/drive_info
     pkg=drive_info
     file=/etc/sudoers.d/drive_info
     script=/var/packages/drive_info/target/ui/bin/drive_info.sh
-    echo "$pkg ALL=(ALL) NOPASSWD: $script" > "$file"
+    pkg=drive_info
+    file=/etc/sudoers.d/drive_info
+    script=/var/packages/drive_info/target/ui/bin/drive_info.sh
+    echo -n "" > "$file"
+    for lang in chs cht csy dan enu fre ger hun ita jpn krn nld nor plk ptb ptg rus spn sve tha trk; do
+        echo "$pkg ALL=(root) NOPASSWD: $script $lang" >> "$file"
+    done
+    echo "$pkg ALL=(root) NOPASSWD: $script" >> "$file"
     chmod 0440 "$file"
     cat "$file"
     ```

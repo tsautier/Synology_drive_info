@@ -1,3 +1,6 @@
+v2.0.23
+- Now shows other local Synology NAS' info in the DSM language of the NAS running Drive Info.
+
 v2.0.22
 - Added Volume information and status.
   - Defaults to enabled but can be disabled in the settings.

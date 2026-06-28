@@ -22,6 +22,27 @@ if [[ -t 1 ]]; then
     echo "Running in an interactive shell (user terminal)."
 fi
 
+# Check if language entries exist in sudoers file, regardless of (ALL) vs (root)
+if ! grep -q "drive_info.sh enu" /etc/sudoers.d/drive_info 2>/dev/null; then
+    # Update sudoers to support language argument
+    pkg=drive_info
+    file=/etc/sudoers.d/drive_info
+    script=/var/packages/drive_info/target/ui/bin/drive_info.sh
+    echo -n "" > "$file"
+    for lang in chs cht csy dan enu fre ger hun ita jpn krn nld nor plk ptb ptg rus spn sve tha trk; do
+        echo "$pkg ALL=(root) NOPASSWD: $script $lang" >> "$file"
+    done
+    echo "$pkg ALL=(root) NOPASSWD: $script" >> "$file"
+    chmod 0440 "$file"
+fi
+
+# Check if 1st argument is a DSM language code
+if [[ $1 =~ chs|cht|csy|dan|enu|fre|ger|hun|ita|jpn|krn|nld|nor|plk|ptb|ptg|rus|spn|sve|tha|trk ]]; then
+    gui_lang="$1"
+else
+    gui_lang=""
+fi
+
 # Get DSM major version
 dsm=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)
 
@@ -32,7 +53,7 @@ dsm=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 get_text_module="$(dirname "${script_dir}")/modules/get_text.sh"
 if [[ -f "${get_text_module}" ]]; then
-    source "${get_text_module}"
+    source "${get_text_module}" "$gui_lang"
 else
     txt() { echo "${3}"; }  # txt SECTION KEY DEFAULT -> just print DEFAULT
 fi

@@ -6,23 +6,20 @@ TARGET_DIR="${PKG_ROOT}/target"
 SCRIPT="${TARGET_DIR}/ui/bin/drive_info.sh"
 SUDOERS_FILE="/etc/sudoers.d/${PKG_NAME}"
 
-# shellcheck source=ui/modules/get_text.sh
-source "${TARGET_DIR}/ui/modules/get_text.sh"
-
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # Settings file location
 # DSM 7: var/ exists and is writable by drive_info (run-as: package)
 # DSM 6: var/ doesn't exist; use etc/ (chmod 666 set in postinst)
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 if [[ -d "${PKG_ROOT}/var" ]]; then
     SETTINGS_CONF="${PKG_ROOT}/var/settings.conf"
 else
     SETTINGS_CONF="${PKG_ROOT}/etc/settings.conf"
 fi
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # JSON API actions - handled before any HTML output
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 
 # Parse action from QUERY_STRING
 _action=""
@@ -30,11 +27,28 @@ if [[ "${QUERY_STRING:-}" =~ (^|&)action=([^&]*) ]]; then
     _action="${BASH_REMATCH[2]}"
 fi
 
-# ---------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------
+# Language argument handling
+#---------------------------------------------------------------------------
+_lang=""
+if [[ "${QUERY_STRING:-}" =~ (^|&)lang=([^&]*) ]]; then
+    _lang="${BASH_REMATCH[2]}"
+    # Validate it's a real lang code
+    if [[ ! "$_lang" =~ ^(chs|cht|csy|dan|enu|fre|ger|hun|ita|jpn|krn|nld|nor|plk|ptb|ptg|rus|spn|sve|tha|trk)$ ]]; then
+        _lang=""
+    fi
+fi
+# Fall back to local setting if not supplied
+[[ -z "$_lang" ]] && _lang="$(get_key_value /etc/synoinfo.conf maillang 2>/dev/null)"
+
+source "${TARGET_DIR}/ui/modules/get_text.sh" "$_lang"
+
+#---------------------------------------------------------------------------
 # action=info
 # Returns JSON identifying this NAS. No sudo needed.
 # Used by remote NAS fetch so the frontend knows who responded.
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 if [[ "$_action" == "info" ]]; then
     _hostname=$(cat /proc/sys/kernel/hostname 2>/dev/null || hostname)
     #_model=$(cat /proc/sys/kernel/syno_hw_version 2>/dev/null || echo "")
@@ -64,12 +78,12 @@ if [[ "$_action" == "info" ]]; then
     exit 0
 fi
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # action=discover
 # Runs syno_discover.py and streams the JSON NAS list.
 # Returns the other NAS on the LAN (the local NAS is not included in the
 # findhostd responses - the frontend adds it separately via action=info).
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 if [[ "$_action" == "discover" ]]; then
     DISCOVER_SCRIPT="${TARGET_DIR}/ui/bin/syno_discover.py"
     printf 'Content-Type: application/json\r\n'
@@ -95,10 +109,10 @@ if [[ "$_action" == "discover" ]]; then
     exit 0
 fi
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # action=get_settings
 # Returns current settings as JSON.
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 if [[ "$_action" == "get_settings" ]]; then
     printf 'Content-Type: application/json\r\n'
     printf '\r\n'
@@ -128,7 +142,7 @@ if [[ "$_action" == "get_settings" ]]; then
     exit 0
 fi
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # action=save_settings
 # Saves settings from query string to settings.conf.
 # Only calls synosetkeyvalue if the value has changed.
@@ -136,7 +150,7 @@ fi
 # Params: discover_nas=true|false
 #         manual_nas_count=N
 #         manual_nas1=hostname,ip,port  (repeated for each NAS)
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 if [[ "$_action" == "save_settings" ]]; then
     printf 'Content-Type: application/json\r\n'
     printf '\r\n'
@@ -217,14 +231,14 @@ if [[ "$_action" == "save_settings" ]]; then
     exit 0
 fi
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # action=get_ha_passive
 # Returns passive node drive data from /var/lib/ha/space_disk_info.
 # This file is maintained by the Synology HighAvailability package and
 # contains a JSON object of all drives on the passive node, keyed by
 # slot id (e.g. "0-1", "0-2", ...).
 # Only available on HD6500 / SHA cluster (requires HighAvailability pkg).
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 if [[ "$_action" == "get_ha_passive" ]]; then
     printf 'Content-Type: application/json\r\n'
     printf '\r\n'
@@ -262,10 +276,10 @@ if [[ "$_action" == "get_ha_passive" ]]; then
     exit 0
 fi
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # Default action: render main page HTML
 # Settings are embedded in the same page and shown/hidden via JS.
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 printf 'Content-Type: text/html; charset=utf-8\r\n'
 printf 'Access-Control-Allow-Origin: *\r\n'
 printf '\r\n'
@@ -319,6 +333,7 @@ _txt_serial=$(txt common serial_number "Serial Number")
 _txt_status=$(txt common status "Status")
 _txt_volume=$(txt common volume "Volume")
 _txt_show_volume_info=$(txt settings show_volume_info "Show volume information")
+_txt_lang="$_lang"   # or gui_lang, whatever you settle on
 
 cat << STYLE
 <style>
@@ -433,9 +448,9 @@ tr.nas-row-disabled td.port-cell input { color: #bbb; }
 </style>
 STYLE
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # Top bar - single button that toggles between gear and home
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 cat << TOPBAR
 <div class="topbar">
   <button class="icon-btn" id="nav-btn"
@@ -444,9 +459,9 @@ cat << TOPBAR
 </div>
 TOPBAR
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # Main view
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 cat << MAINVIEW
 <div id="main-view">
 MAINVIEW
@@ -498,7 +513,8 @@ dd if=/dev/zero bs=4096 count=1 2>/dev/null | tr '\0' ' '
 
 # Run drive_info.sh as root via sudo
 STDERR_TMP=$(mktemp)
-OUTPUT=$(sudo "${SCRIPT}" 2>"$STDERR_TMP")
+OUTPUT=$(sudo "${SCRIPT}" "$_lang" 2>"$STDERR_TMP")
+
 EXIT_CODE=$?
 STDERR_OUT=$(cat "$STDERR_TMP")
 rm -f "$STDERR_TMP"
@@ -759,9 +775,9 @@ echo '<div id="ha-passive-container"></div>'
 # Close main-view div
 echo '</div>'
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # Settings panel - hidden until gear button clicked
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 cat << SETTINGSHTML
 <div id="settings-panel" style="display:none;">
   <h2>&nbsp;&nbsp;${_txt_settings}</h2>
@@ -806,14 +822,15 @@ cat << SETTINGSHTML
 </div>
 SETTINGSHTML
 
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # JavaScript - settings panel + remote NAS fetching
-# ---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 cat << JAVASCRIPT
 <script>
 var nasData = ${_manual_json};
 var nasDataSaved = JSON.parse(JSON.stringify(nasData));  // snapshot for Cancel
 var txtRemove = "${_txt_remove}";
+var viewer_lang = '${_lang}';
 var dirty = false;  // true only after settings have been saved
 
 // ---------------------------------------------------------------------------
@@ -1123,8 +1140,9 @@ function fetchOneDriveInfo(nas) {
 }
 
 function fetchDriveTable(section, url) {
+    var sep = url.indexOf('?') >= 0 ? '&' : '?';
     var fxhr = new XMLHttpRequest();
-    fxhr.open('GET', url, true);
+    fxhr.open('GET', url + sep + 'lang=' + encodeURIComponent(viewer_lang), true);
     fxhr.timeout = 15000;
     fxhr.onreadystatechange = function() {
         if (fxhr.readyState !== 4) return;
