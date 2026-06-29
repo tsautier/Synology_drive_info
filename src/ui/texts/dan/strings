@@ -9,6 +9,25 @@ err_sudofail_desc	=	"Sudoers-posten findes, men sudo mislykkedes. Kontrollér, a
 err_sudofail_must_contain	=	"Den bør indeholde præcis:"
 err_see_details	=	"Se <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a> for fuldstændige oplysninger."
 
+[settings]
+settings	=	Indstillinger
+port	=	Port
+remove	=	Fjern
+save	=	Gem
+back	=	Tilbage
+searching	=	Søger efter...
+saved	=	Gemt
+hostname	=	Værtsnavn
+ip_address	=	IP-adresse
+add_device	=	Tilføj en enhed
+mac_address	=	MAC-adresse
+discover_local_nas	=	Find alle lokale Synology NAS
+discovering	=	Søger efter NAS...
+manual_nas_list	=	Yderligere NAS
+login_port	=	Login-port.
+cancel	=	Annuller
+show_volume_info	=	"Vis volumeoplysninger"
+
 [common]
 location	=	Placering
 drive_id	=	Disk-ID
@@ -35,22 +54,10 @@ volume	=	Diskenhed
 storage_pool	=	Lagerpulje
 volume_used	=	Brugt
 volume_size	=	"Volumestørrelse"
-
-[settings]
-settings	=	Indstillinger
-port	=	Port
-remove	=	Fjern
-save	=	Gem
-back	=	Tilbage
-searching	=	Søger efter...
-saved	=	Gemt
-hostname	=	Værtsnavn
-ip_address	=	IP-adresse
-add_device	=	Tilføj en enhed
-mac_address	=	MAC-adresse
-discover_local_nas	=	Find alle lokale Synology NAS
-discovering	=	Søger efter NAS...
-manual_nas_list	=	Yderligere NAS
-login_port	=	Login-port.
-cancel	=	Annuller
-show_volume_info	=	"Vis volumeoplysninger"
+status_degraded	=	Degraderet
+status_repairing	=	Reparerer
+status_read_only	=	Skrivebeskyttet
+status_crashed	=	Brudt sammen
+storage_status	=	Lagerstatus
+status_repairing	=	"Reparerer"
+data_scrubbing	=	Data-scrubbing

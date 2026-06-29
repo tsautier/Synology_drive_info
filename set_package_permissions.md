@@ -9,9 +9,6 @@ sudo -i
 pkg=drive_info
 file=/etc/sudoers.d/drive_info
 script=/var/packages/drive_info/target/ui/bin/drive_info.sh
-pkg=drive_info
-file=/etc/sudoers.d/drive_info
-script=/var/packages/drive_info/target/ui/bin/drive_info.sh
 echo -n "" > "$file"
 for lang in chs cht csy dan enu fre ger hun ita jpn krn nld nor plk ptb ptg rus spn sve tha trk; do
     echo "$pkg ALL=(root) NOPASSWD: $script $lang" >> "$file"
@@ -31,9 +28,6 @@ cat "$file"
 6. Click **Task Settings**.
 7. In the box under **User-defined script** copy and paste the following. 
     ```
-    pkg=drive_info
-    file=/etc/sudoers.d/drive_info
-    script=/var/packages/drive_info/target/ui/bin/drive_info.sh
     pkg=drive_info
     file=/etc/sudoers.d/drive_info
     script=/var/packages/drive_info/target/ui/bin/drive_info.sh
@@ -58,7 +52,7 @@ cat "$file"
 <p align="center"><kbd><img src="images/sudoers2.png"></kbd></p>
 
 <p align="center">Step 3</p>
-<p align="center"><kbd><img src="images/sudoers3.png"></kbd></p>
+<p align="center"><kbd><img src="images/sudoers3-2.png"></kbd></p>
 
 <p align="center">Step 4</p>
 <p align="center"><kbd><img src="images/sudoers4.png"></kbd></p>

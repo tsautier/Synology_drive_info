@@ -9,33 +9,6 @@ err_sudofail_desc	=	"The sudoers entry exists but sudo failed. Check the entry i
 err_sudofail_must_contain	=	"It should contain exactly:"
 err_see_details	=	"See <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a> for full details."
 
-[common]
-location	=	Location
-drive_id	=	Drive ID
-drive_information	=	Drive Information
-drive	=	Drive
-m2_drive	=	M.2 Drive
-model	=	Model
-id	=	ID
-serial_number	=	Serial Number
-system_drive	=	System Drive
-system_drive_slot	=	System Drive Slot
-status_normal	=	Normal
-status_healthy	=	Healthy
-status_warning	=	Warning
-status_critical	=	Critical
-status_failing	=	Failing
-status_unknown	=	Unknown
-status_disabled	=	Disabled
-status	=	Status
-status_data_detected	=	Detected
-status_unsupported	=	Not supported
-loading	=	Loading...
-volume	=	Volume
-storage_pool	=	Storage Pool
-volume_used	=	"Used"
-volume_size	=	"Volume Size"
-
 [settings]
 settings	=	Settings
 port	=	Port
@@ -54,3 +27,37 @@ manual_nas_list	=	Additional NAS
 login_port	=	Login port
 cancel	=	Cancel
 show_volume_info	=	"Show volume information"
+
+[common]
+drive	=	Drive
+drive_id	=	Drive ID
+drive_information	=	Drive Information
+id	=	ID
+loading	=	Loading...
+location	=	Location
+m2_drive	=	M.2 Drive
+model	=	Model
+serial_number	=	Serial Number
+status	=	Status
+status_crashed	=	Crashed
+status_critical	=	Critical
+status_data_detected	=	Detected
+status_degraded	=	Degraded
+status_disabled	=	Disabled
+status_failing	=	Failing
+status_healthy	=	Healthy
+status_normal	=	Normal
+status_read_only	=	Read-only
+status_repairing	=	Repairing
+status_unknown	=	Unknown
+status_unsupported	=	Not supported
+status_warning	=	Warning
+storage_pool	=	Storage Pool
+system_drive	=	System Drive
+system_drive_slot	=	System Drive Slot
+volume	=	Volume
+volume_size	=	"Volume Size"
+volume_used	=	"Used"
+storage_status	=	Storage Status
+status_repairing	=	Repairing
+data_scrubbing	=	Data Scrubbing

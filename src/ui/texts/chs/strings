@@ -10,6 +10,25 @@ err_sudofail_desc	=	"sudoers 条目已存在，但 sudo 执行失败。请检查
 err_sudofail_must_contain	=	"它应该完全包含："
 err_see_details	=	"请参阅 <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a> 以获取完整详情。"
 
+[settings]
+settings	=	设置
+port	=	端口
+remove	=	删除
+save	=	保存
+back	=	上一步
+searching	=	搜索中...
+saved	=	已保存
+hostname	=	主机名
+ip_address	=	IP 地址
+add_device	=	添加设备
+mac_address	=	MAC 地址
+discover_local_nas	=	查找所有本地 Synology NAS
+discovering	=	正在发现 NAS...
+manual_nas_list	=	其他 NAS
+login_port	=	登录端口
+cancel	=	取消
+show_volume_info	=	"显示卷信息"
+
 [common]
 location	=	位置
 drive_id	=	硬盘 ID
@@ -36,22 +55,10 @@ volume	=	存储空间
 storage_pool	=	存储池
 volume_used	=	已用
 volume_size	=	"卷大小"
-
-[settings]
-settings	=	设置
-port	=	端口
-remove	=	删除
-save	=	保存
-back	=	上一步
-searching	=	搜索中...
-saved	=	已保存
-hostname	=	主机名
-ip_address	=	IP 地址
-add_device	=	添加设备
-mac_address	=	MAC 地址
-discover_local_nas	=	查找所有本地 Synology NAS
-discovering	=	正在发现 NAS...
-manual_nas_list	=	其他 NAS
-login_port	=	登录端口
-cancel	=	取消
-show_volume_info	=	"显示卷信息"
+status_degraded	=	堪用
+status_repairing	=	修复中
+status_read_only	=	只读
+status_crashed	=	已损毁
+storage_status	=	存储状态
+status_repairing	=	"修复中"
+data_scrubbing	=	数据清理

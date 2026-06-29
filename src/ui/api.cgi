@@ -6,6 +6,9 @@ TARGET_DIR="${PKG_ROOT}/target"
 SCRIPT="${TARGET_DIR}/ui/bin/drive_info.sh"
 SUDOERS_FILE="/etc/sudoers.d/${PKG_NAME}"
 
+# Get DSM major version
+dsm=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)
+
 #---------------------------------------------------------------------------
 # Settings file location
 # DSM 7: var/ exists and is writable by drive_info (run-as: package)
@@ -314,7 +317,7 @@ _manual_json+="]"
 _txt_drive_info=$(txt common drive_information "Drive Information")
 _txt_loading=$(txt common loading "Loading...")
 _txt_settings=$(txt settings settings "Settings")
-_txt_discover=$(txt settings discover_local_nas "Discover all local Synology NAS")
+_txt_discover=$(txt settings discover_local_nas "Find all local Synology NAS")
 _txt_discovering=$(txt settings discovering "Discovering NAS...")
 _txt_manual=$(txt settings manual_nas_list "Additional NAS")
 _txt_hostname=$(txt settings hostname "Hostname")
@@ -374,11 +377,13 @@ col.vol-name   { width: 12%; min-width: 80px; }
 col.vol-pool   { width: 18%; min-width: 110px; }
 col.vol-size   { width: 12%; min-width: 80px; }
 col.vol-used   { width: 10%; min-width: 60px; }
+col.vol-pool-status { width: auto; min-width: 100px; }
 td.vol-name    { color: #057FEB; white-space: nowrap; }
 td.vol-pool    { white-space: nowrap; }
 td.vol-size    { white-space: nowrap; }
 td.vol-used    { white-space: nowrap; }
-th.vol-name, th.vol-pool, th.vol-size, th.vol-used { white-space: nowrap; }
+td.vol-pool-status { white-space: nowrap; }
+th.vol-name, th.vol-pool, th.vol-size, th.vol-used, th.vol-pool-status { white-space: nowrap; }
 .err { color: #c00; }
 a    { color: #0073c0; }
 /* Top bar - shared by both views */
@@ -474,21 +479,17 @@ if [[ ! -f "$SCRIPT" ]]; then
 fi
 
 # Check sudo permission
-if ! sudo -n -l "$SCRIPT" >/dev/null 2>&1; then
-    cat << NOPERMS
+if [[ "$dsm" -ge "7" ]]; then
+    if ! sudo -n -l "$SCRIPT" >/dev/null 2>&1; then
+        cat << NOPERMS
 <h2 style="color:#c00;">$(txt errors err_noperms_title "Permissions not configured")</h2>
 <p>$(txt errors err_noperms_desc "This package needs elevated permissions to read drive information.")</p>
-<p>$(txt errors err_noperms_ssh "Connect to your NAS via SSH and run:")</p>
-<pre>sudo -i
-echo "drive_info ALL=(root) NOPASSWD: $SCRIPT" \\
-    &gt; $SUDOERS_FILE
-chmod 0440 $SUDOERS_FILE</pre>
-<p>$(txt errors err_noperms_reopen "Then close and reopen this window.")</p>
 <p>$(txt errors err_see_details "See <a href=\"https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md\" target=\"_blank\">set_package_permissions.md</a> for full details.")</p>
 </div>
 <script>document.getElementById("nav-btn").disabled=false;</script>
 NOPERMS
-    exit 0
+        exit 0
+    fi
 fi
 
 # Spinner
@@ -523,17 +524,17 @@ rm -f "$STDERR_TMP"
 echo '<script>document.getElementById("loading").style.display="none";document.getElementById("nav-btn").disabled=false;</script>'
 
 # Check if sudo failed
-if echo "$STDERR_OUT" | grep -qi "not in the sudoers\|sudoers file\|not allowed\|password is required"; then
-    cat << SUDOFAIL
+if [[ "$dsm" -ge "7" ]]; then
+    if echo "$STDERR_OUT" | grep -qi "not in the sudoers\|sudoers file\|not allowed\|password is required"; then
+        cat << SUDOFAIL
 <h2 style="color:#c00;">$(txt errors err_sudofail_title "Permissions not configured correctly")</h2>
 <p>$(txt errors err_sudofail_desc "The sudoers entry exists but sudo failed. Check the entry is correct:")</p>
 <pre>cat $SUDOERS_FILE</pre>
-<p>$(txt errors err_sudofail_must_contain "It should contain exactly:")</p>
-<pre>drive_info ALL=(root) NOPASSWD: $SCRIPT</pre>
 <p>$(txt errors err_see_details "See <a href=\"https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md\" target=\"_blank\">set_package_permissions.md</a> for full details.")</p>
 </div>
 SUDOFAIL
-    exit 0
+        exit 0
+    fi
 fi
 
 if [[ $EXIT_CODE -ne 0 ]]; then
@@ -654,7 +655,7 @@ while IFS= read -r line; do
                 # Skip volume table entirely
                 in_table=0; table_type=""; headers=(); continue
             fi
-            echo '<div class="vol-table-wrapper"><table class="vol-table"><colgroup><col class="vol-name"><col class="vol-pool"><col class="vol-size"><col class="vol-used"><col class="status"></colgroup>'
+            echo '<div class="vol-table-wrapper"><table class="vol-table"><colgroup><col class="vol-name"><col class="vol-pool"><col class="vol-size"><col class="vol-used"><col class="status"><col class="vol-pool-status"></colgroup>'
         else
             table_type="drive"
             if [[ $HAS_LOCATION -eq 1 ]]; then
@@ -666,7 +667,7 @@ while IFS= read -r line; do
 
         echo "<thead><tr>"
         if [[ "$table_type" == "volume" ]]; then
-            vol_classes=("vol-name" "vol-pool" "vol-size" "vol-used" "status")
+            vol_classes=("vol-name" "vol-pool" "vol-size" "vol-used" "status" "vol-pool-status")
             for idx in "${!headers[@]}"; do
                 cls="${vol_classes[$idx]:-}"
                 echo "<th class=\"$cls\">$(echo "${headers[$idx]}" | sed 's/</\&lt;/g;s/>/\&gt;/g')</th>"
@@ -713,6 +714,21 @@ while IFS= read -r line; do
                         esac
                         echo "<td class=\"$css_class\">$val</td>"
                         ;;
+                    5)
+                        case "$val" in
+                            healthy::*)  css_class="status-healthy";  val="${val#healthy::}"  ;;
+                            warning::*)  css_class="status-warning";  val="${val#warning::}"  ;;
+                            critical::*) css_class="status-critical"; val="${val#critical::}" ;;
+                            failing::*)  css_class="status-failing";  val="${val#failing::}"  ;;
+                            *)           css_class="vol-pool-status"                          ;;
+                        esac
+                        if [[ "$val" == *" - "* ]]; then
+                            val_main="${val%% - *}"
+                            val_suffix=" - ${val#* - }"
+                            echo "<td class=\"$css_class\">${val_main}<span style=\"color:var(--text-color,#000)\">${val_suffix}</span></td>"
+                        else
+                            echo "<td class=\"$css_class\">$val</td>"
+                        fi                        ;;
                     *) echo "<td>$val</td>" ;;
                 esac
             else
@@ -829,6 +845,8 @@ cat << JAVASCRIPT
 <script>
 var nasData = ${_manual_json};
 var nasDataSaved = JSON.parse(JSON.stringify(nasData));  // snapshot for Cancel
+var discoverNasSaved = ${_discover_nas};                 // snapshot for Cancel
+var showVolumeInfoSaved = ${_show_volume_info};          // snapshot for Cancel
 var txtRemove = "${_txt_remove}";
 var viewer_lang = '${_lang}';
 var dirty = false;  // true only after settings have been saved
@@ -849,6 +867,8 @@ function showSettings() {
 function cancelSettings() {
     // Discard any unsaved changes by re-reading from the last-saved nasData snapshot
     nasData = JSON.parse(JSON.stringify(nasDataSaved));
+    document.getElementById('discover_nas').checked = discoverNasSaved;
+    document.getElementById('show_volume_info').checked = showVolumeInfoSaved;
     document.getElementById('settings-panel').style.display = 'none';
     document.getElementById('main-view').style.display = '';
     var btn = document.getElementById('nav-btn');

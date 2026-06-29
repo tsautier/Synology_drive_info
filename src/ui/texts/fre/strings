@@ -9,6 +9,25 @@ err_sudofail_desc	=	"L'entrée sudoers existe, mais sudo a échoué. Vérifiez q
 err_sudofail_must_contain	=	"Elle doit contenir exactement :"
 err_see_details	=	"Consultez <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a> pour tous les détails."
 
+[settings]
+settings	=	Paramètres
+port	=	Port
+remove	=	Supprimer
+save	=	Sauvegarder
+back	=	Retour
+searching	=	Recherche...
+saved	=	Enregistré
+hostname	=	Nom d'hôte
+ip_address	=	Adresse IP
+add_device	=	Ajouter un périphérique
+mac_address	=	Adresse MAC
+discover_local_nas	=	Trouver tous les NAS Synology locaux
+discovering	=	Recherche de NAS...
+manual_nas_list	=	NAS supplémentaires
+login_port	=	Port de connexion
+cancel	=	Annuler
+show_volume_info	=	"Afficher les informations sur le volume"
+
 [common]
 location	=	Emplacement
 drive_id	=	ID de disque
@@ -35,22 +54,10 @@ volume	=	Volume
 storage_pool	=	Groupe de stockage
 volume_used	=	Utilisé
 volume_size	=	"Taille du volume"
-
-[settings]
-settings	=	Paramètres
-port	=	Port
-remove	=	Supprimer
-save	=	Sauvegarder
-back	=	Retour
-searching	=	Recherche...
-saved	=	Enregistré
-hostname	=	Nom d'hôte
-ip_address	=	Adresse IP
-add_device	=	Ajouter un périphérique
-mac_address	=	Adresse MAC
-discover_local_nas	=	Trouver tous les NAS Synology locaux
-discovering	=	Recherche de NAS...
-manual_nas_list	=	NAS supplémentaires
-login_port	=	Port de connexion
-cancel	=	Annuler
-show_volume_info	=	"Afficher les informations sur le volume"
+status_degraded	=	Dégradé
+status_repairing	=	Réparation
+status_read_only	=	Lecture seule
+status_crashed	=	En panne
+storage_status	=	État du stockage
+status_repairing	=	"Réparation en cours"
+data_scrubbing	=	Nettoyage des données

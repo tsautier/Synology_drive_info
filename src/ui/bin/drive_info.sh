@@ -23,17 +23,19 @@ if [[ -t 1 ]]; then
 fi
 
 # Check if language entries exist in sudoers file, regardless of (ALL) vs (root)
-if ! grep -q "drive_info.sh enu" /etc/sudoers.d/drive_info 2>/dev/null; then
-    # Update sudoers to support language argument
-    pkg=drive_info
-    file=/etc/sudoers.d/drive_info
-    script=/var/packages/drive_info/target/ui/bin/drive_info.sh
-    echo -n "" > "$file"
-    for lang in chs cht csy dan enu fre ger hun ita jpn krn nld nor plk ptb ptg rus spn sve tha trk; do
-        echo "$pkg ALL=(root) NOPASSWD: $script $lang" >> "$file"
-    done
-    echo "$pkg ALL=(root) NOPASSWD: $script" >> "$file"
-    chmod 0440 "$file"
+if [[ "$dsm" -ge "7" ]]; then
+    if ! grep -q "drive_info.sh enu" /etc/sudoers.d/drive_info 2>/dev/null; then
+        # Update sudoers to support language argument
+        pkg=drive_info
+        file=/etc/sudoers.d/drive_info
+        script=/var/packages/drive_info/target/ui/bin/drive_info.sh
+        echo -n "" > "$file"
+        for lang in chs cht csy dan enu fre ger hun ita jpn krn nld nor plk ptb ptg rus spn sve tha trk; do
+            echo "$pkg ALL=(root) NOPASSWD: $script $lang" >> "$file"
+        done
+        echo "$pkg ALL=(root) NOPASSWD: $script" >> "$file"
+        chmod 0440 "$file"
+    fi
 fi
 
 # Check if 1st argument is a DSM language code
@@ -136,12 +138,17 @@ get_nvme_num(){
 get_drive_health(){ 
     local health_status
     status=""
-    #health_status=$(synowebapi -s --exec api="SYNO.Storage.CGI.Smart" method="get_health_info" version="1" device="\"/dev/$drive\"" \
-    #    | jq -r '.data.healthInfo.overview.drive_status_key')
-    health_status=$(synowebapi -s --exec api="SYNO.Storage.CGI.Smart" method="get_health_info" version="1" device="\"/dev/$drive\"" 2>/dev/null \
-        | jq -r '.data.healthInfo.overview.drive_status_key')
+    if [[ "$dsm" -le "6" ]]; then
+        # This works in DSM 6 but takes 31 seconds for 8 drives!
+        # The get_drive_health6 method only takes 4 seconds for 8 drives
+        health_status=$(synowebapi --exec api="SYNO.Storage.CGI.Smart" method="get_health_info" version="1" device="\"/dev/$drive\"" 2>/dev/null \
+            | jq -r '.data.healthInfo.overview.overview_status')
+    else
+        health_status=$(synowebapi -s --exec api="SYNO.Storage.CGI.Smart" method="get_health_info" version="1" device="\"/dev/$drive\"" 2>/dev/null \
+            | jq -r '.data.healthInfo.overview.drive_status_key')
+    fi
 
-    # If webapi returned nothing, fall back to DSM 6 cache method
+    # If webapi returned nothing, fall back to DSM 6.1 cache method
     if [[ -z "$health_status" ]] || [[ "$health_status" == "null" ]]; then
         get_drive_health6
         return
@@ -387,33 +394,41 @@ echo ""
 # Volume information table
 get_volume_info(){
     local storage_json
-    storage_json=$(synowebapi -s --exec api=SYNO.Storage.CGI.Storage method=load_info version=1 2>/dev/null)
+    if [[ "$dsm" -le "6" ]]; then
+        storage_json=$(synowebapi --exec api=SYNO.Storage.CGI.Storage method=load_info version=1 2>/dev/null)
+    else
+        storage_json=$(synowebapi -s --exec api=SYNO.Storage.CGI.Storage method=load_info version=1 2>/dev/null)
+    fi    
     if [[ -z "$storage_json" ]] || ! echo "$storage_json" | jq -e '.success' >/dev/null 2>&1; then
         return 1
     fi
 
-    # Build pool num_id lookup: pool id -> num_id
-    # e.g. reuse_1 -> 1, reuse_2 -> 2
-    declare -A pool_num
-    while IFS='|' read -r pool_id pool_num_id; do
+    # Build pool lookup: pool id -> num_id and pool status
+    declare -A pool_num pool_status_map
+    while IFS='|' read -r pool_id pool_num_id pool_st pool_scrub; do
         pool_num["$pool_id"]="$pool_num_id"
-    done < <(echo "$storage_json" | jq -r '.data.storagePools[] | "\(.id)|\(.num_id)"')
+        local scrub_suffix=""
+        [[ "$pool_scrub" == "scrubbing" ]] && scrub_suffix=" - Data Scrubbing"
+        pool_status_map["$pool_id"]="${pool_st}${scrub_suffix}"
+    done < <(echo "$storage_json" | jq -r '.data.storagePools[] | "\(.id)|\(.num_id)|\(.status)|\(.scrubbingStatus // "")"')
 
-    local hdr_vol hdr_pool hdr_size hdr_pct hdr_status
+    local hdr_vol hdr_pool hdr_size hdr_pct hdr_status hdr_pool_status
     hdr_vol="$(txt common volume "Volume")"
     hdr_pool="$(txt common storage_pool "Storage Pool")"
     hdr_size="$(txt common volume_size "Volume Size")"
     hdr_pct="$(txt common volume_used "Used")"
     hdr_status="$(txt common status "Status")"
+    hdr_pool_status="$(txt common storage_status "Storage Status")"
 
-    local w_vol w_pool w_size w_pct w_status
+    local w_vol w_pool w_size w_pct w_status w_pool_status
     w_vol=${#hdr_vol}
     w_pool=${#hdr_pool}
     w_size=${#hdr_size}
     w_pct=${#hdr_pct}
     w_status=${#hdr_status}
+    w_pool_status=${#hdr_pool_status}
 
-    local vol_nums=() vol_pools=() vol_sizes=() vol_pcts=() vol_statuses=()
+    local vol_nums=() vol_pools=() vol_sizes=() vol_pcts=() vol_statuses=() vol_pool_statuses=()
 
     local label_vol label_pool
     label_vol="$(txt common volume "Volume")"
@@ -444,7 +459,7 @@ get_volume_info(){
             else       { print "0%" }
         }')
 
-        # Status
+        # Volume status
         local status_str
         case "$vol_status" in
             normal)     status_str="healthy::$(txt common status_healthy "Healthy")" ;;
@@ -453,10 +468,28 @@ get_volume_info(){
             repairing)  status_str="warning::$(txt common status_repairing "Repairing")" ;;
             rebuilding) status_str="warning::$(txt common status_rebuilding "Rebuilding")" ;;
             read_only)  status_str="warning::$(txt common status_read_only "Read-only")" ;;
+            background|background_scrubbing) status_str="healthy::$(txt common status_healthy "Healthy")" ;;
             *)          status_str="$vol_status" ;;
         esac
         if [[ -t 1 ]]; then
             status_str="${status_str#*::}"
+        fi
+
+        # Pool status
+        local pool_st pool_status_str
+        pool_st="${pool_status_map[$pool_path]}"
+        case "$pool_st" in
+            normal)     pool_status_str="healthy::$(txt common status_healthy "Healthy")" ;;
+            degrade)    pool_status_str="critical::$(txt common status_degraded "Degraded")" ;;
+            crashed)    pool_status_str="critical::$(txt common status_crashed "Crashed")" ;;
+            repairing)  pool_status_str="warning::$(txt common status_repairing "Repairing")" ;;
+            rebuilding) pool_status_str="warning::$(txt common status_rebuilding "Rebuilding")" ;;
+            read_only)  pool_status_str="warning::$(txt common status_read_only "Read-only")" ;;
+            background|background_scrubbing) pool_status_str="healthy::$(txt common status_healthy "Healthy") - $(txt common status_data_scrubbing "Data Scrubbing")" ;;
+            *)          pool_status_str="$pool_st" ;;
+        esac
+        if [[ -t 1 ]]; then
+            pool_status_str="${pool_status_str#*::}"
         fi
 
         vol_nums+=("$vol_label")
@@ -464,26 +497,28 @@ get_volume_info(){
         vol_sizes+=("$size_str")
         vol_pcts+=("$pct_str")
         vol_statuses+=("$status_str")
+        vol_pool_statuses+=("$pool_status_str")
 
-        (( ${#vol_label}   > w_vol    )) && w_vol=${#vol_label}
-        (( ${#pool_label}  > w_pool   )) && w_pool=${#pool_label}
-        (( ${#size_str}    > w_size   )) && w_size=${#size_str}
-        (( ${#pct_str}     > w_pct    )) && w_pct=${#pct_str}
-        (( ${#status_str}  > w_status )) && w_status=${#status_str}
+        (( ${#vol_label}        > w_vol         )) && w_vol=${#vol_label}
+        (( ${#pool_label}       > w_pool        )) && w_pool=${#pool_label}
+        (( ${#size_str}         > w_size        )) && w_size=${#size_str}
+        (( ${#pct_str}          > w_pct         )) && w_pct=${#pct_str}
+        (( ${#status_str}       > w_status      )) && w_status=${#status_str}
+        (( ${#pool_status_str}  > w_pool_status )) && w_pool_status=${#pool_status_str}
 
     done < <(echo "$storage_json" | jq -r '[.data.volumes[]] | sort_by(.num_id) | .[] | "\(.num_id)|\(.pool_path)|\(.size.total)|\(.size.used)|\(.summary_status // .status)"')
 
     if [[ "${#vol_nums[@]}" -gt 0 ]]; then
         local sep_len
-        sep_len=$(( w_vol + 2 + w_pool + 2 + w_size + 2 + w_pct + 2 + w_status ))
+        sep_len=$(( w_vol + 2 + w_pool + 2 + w_size + 2 + w_pct + 2 + w_status + 2 + w_pool_status ))
         echo ""
         printf '%*s\n' "$sep_len" '' | tr ' ' '-'
-        printf "%-${w_vol}s  %-${w_pool}s  %-${w_size}s  %-${w_pct}s  %-${w_status}s\n" \
-            "$hdr_vol" "$hdr_pool" "$hdr_size" "$hdr_pct" "$hdr_status"
+        printf "%-${w_vol}s  %-${w_pool}s  %-${w_size}s  %-${w_pct}s  %-${w_status}s  %-${w_pool_status}s\n" \
+            "$hdr_vol" "$hdr_pool" "$hdr_size" "$hdr_pct" "$hdr_status" "$hdr_pool_status"
         printf '%*s\n' "$sep_len" '' | tr ' ' '-'
         for i in "${!vol_nums[@]}"; do
-            printf "%-${w_vol}s  %-${w_pool}s  %-${w_size}s  %-${w_pct}s  %-${w_status}s\n" \
-                "${vol_nums[$i]}" "${vol_pools[$i]}" "${vol_sizes[$i]}" "${vol_pcts[$i]}" "${vol_statuses[$i]}"
+            printf "%-${w_vol}s  %-${w_pool}s  %-${w_size}s  %-${w_pct}s  %-${w_status}s  %-${w_pool_status}s\n" \
+                "${vol_nums[$i]}" "${vol_pools[$i]}" "${vol_sizes[$i]}" "${vol_pcts[$i]}" "${vol_statuses[$i]}" "${vol_pool_statuses[$i]}"
         done
     fi
 }

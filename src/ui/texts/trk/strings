@@ -9,6 +9,25 @@ err_sudofail_desc	=	"sudoers girişi mevcut ancak sudo başarısız oldu. Giriş
 err_sudofail_must_contain	=	"Tam olarak şunu içermelidir:"
 err_see_details	=	"Tüm ayrıntılar için <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a> sayfasına bakın."
 
+[settings]
+settings	=	Ayarlar
+port	=	Bağlantı Noktası
+remove	=	Kaldır
+save	=	Kaydet
+back	=	Geri
+searching	=	Aranıyor...
+saved	=	Kaydedildi
+hostname	=	Ana bilgisayar adı
+ip_address	=	IP Adresi
+add_device	=	Bir Aygıt Ekle
+mac_address	=	MAC Adresi
+discover_local_nas	=	Tüm yerel Synology NAS'ları bul
+discovering	=	NAS aranıyor...
+manual_nas_list	=	Ek NAS
+login_port	=	Oturum açma bağlantı noktası
+cancel	=	İptal
+show_volume_info	=	"Birim bilgilerini göster"
+
 [common]
 location	=	Konum
 drive_id	=	Sürücü Kimliği
@@ -35,22 +54,10 @@ volume	=	Birim
 storage_pool	=	Depolama Havuzu
 volume_used	=	Kullanılan
 volume_size	=	"Birim Boyutu"
-
-[settings]
-settings	=	Ayarlar
-port	=	Bağlantı Noktası
-remove	=	Kaldır
-save	=	Kaydet
-back	=	Geri
-searching	=	Aranıyor...
-saved	=	Kaydedildi
-hostname	=	Ana bilgisayar adı
-ip_address	=	IP Adresi
-add_device	=	Bir Aygıt Ekle
-mac_address	=	MAC Adresi
-discover_local_nas	=	Tüm yerel Synology NAS'ları bul
-discovering	=	NAS aranıyor...
-manual_nas_list	=	Ek NAS
-login_port	=	Oturum açma bağlantı noktası
-cancel	=	İptal
-show_volume_info	=	"Birim bilgilerini göster"
+status_degraded	=	Kapasitesi düşmüş
+status_repairing	=	Onarıyor
+status_read_only	=	Salt okunur
+status_crashed	=	Çöktü
+storage_status	=	Depolama Durumu
+status_repairing	=	"Onarılıyor"
+data_scrubbing	=	Veri Düzeltme

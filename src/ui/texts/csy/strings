@@ -9,6 +9,25 @@ err_sudofail_desc	=	"Položka v sudoers existuje, ale příkaz sudo selhal. Zkon
 err_sudofail_must_contain	=	"Měla by obsahovat přesně:"
 err_see_details	=	"Úplné podrobnosti naleznete v <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a>."
 
+[settings]
+settings	=	Nastavení
+port	=	Port
+remove	=	Odebrat
+save	=	Uložit
+back	=	Zpět
+searching	=	Hledání...
+saved	=	Ušetřeno
+hostname	=	Název hostitele
+ip_address	=	IP adresa
+add_device	=	Přidat zařízení
+mac_address	=	Adresa MAC
+discover_local_nas	=	Najít všechny místní NAS Synology
+discovering	=	Hledání NAS...
+manual_nas_list	=	Další NAS
+login_port	=	Port pro přihlášení
+cancel	=	Storno
+show_volume_info	=	"Zobrazit informace o svazku"
+
 [common]
 location	=	Umístění
 drive_id	=	ID disku
@@ -35,22 +54,10 @@ volume	=	Svazek
 storage_pool	=	Fond úložiště
 volume_used	=	Využito
 volume_size	=	"Velikost svazku"
-
-[settings]
-settings	=	Nastavení
-port	=	Port
-remove	=	Odebrat
-save	=	Uložit
-back	=	Zpět
-searching	=	Hledání...
-saved	=	Ušetřeno
-hostname	=	Název hostitele
-ip_address	=	IP adresa
-add_device	=	Přidat zařízení
-mac_address	=	Adresa MAC
-discover_local_nas	=	Najít všechny místní NAS Synology
-discovering	=	Hledání NAS...
-manual_nas_list	=	Další NAS
-login_port	=	Port pro přihlášení
-cancel	=	Storno
-show_volume_info	=	"Zobrazit informace o svazku"
+status_degraded	=	Omezený režim
+status_repairing	=	Oprava
+status_read_only	=	Jen pro čtení
+status_crashed	=	Zhroucení
+storage_status	=	Stav úložiště
+status_repairing	=	"Opravuje se"
+data_scrubbing	=	Scrubbing dat

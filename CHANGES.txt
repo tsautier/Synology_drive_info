@@ -1,3 +1,7 @@
+v2.0.24
+- Now shows Storage Pool status, including if data scrubbing is running.
+- Bug fix for "Find all local Synology NAS"​ and "Show volume information"​ showing the wrong toggle state if you change a toggle and click cancel or back and then click settings again.
+
 v2.0.23
 - Now shows other local Synology NAS' info in the DSM language of the NAS running Drive Info.
 

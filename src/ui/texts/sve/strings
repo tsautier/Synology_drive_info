@@ -9,6 +9,25 @@ err_sudofail_desc	=	"Sudoers-posten finns, men sudo misslyckades. Kontrollera at
 err_sudofail_must_contain	=	"Den bör innehålla exakt:"
 err_see_details	=	"Se <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a> för fullständiga detaljer."
 
+[settings]
+settings	=	Inställningar
+port	=	Port
+remove	=	Ta bort
+save	=	Spara
+back	=	Bakåt
+searching	=	Söker...
+saved	=	Sparad
+hostname	=	Värdnamn
+ip_address	=	IP-adress
+add_device	=	Lägg till en enhet
+mac_address	=	MAC-adress
+discover_local_nas	=	Hitta alla lokala Synology NAS
+discovering	=	Söker efter NAS...
+manual_nas_list	=	Ytterligare NAS
+login_port	=	Inloggningsport
+cancel	=	Avbryt
+show_volume_info	=	"Visa volyminformation"
+
 [common]
 drive_id	=	Disk-ID
 drive_information	=	Hårddiskinformation
@@ -34,22 +53,10 @@ volume	=	Volym
 storage_pool	=	Lagringspool
 volume_used	=	Använt
 volume_size	=	"Volymstorlek"
-
-[settings]
-settings	=	Inställningar
-port	=	Port
-remove	=	Ta bort
-save	=	Spara
-back	=	Bakåt
-searching	=	Söker...
-saved	=	Sparad
-hostname	=	Värdnamn
-ip_address	=	IP-adress
-add_device	=	Lägg till en enhet
-mac_address	=	MAC-adress
-discover_local_nas	=	Hitta alla lokala Synology NAS
-discovering	=	Söker efter NAS...
-manual_nas_list	=	Ytterligare NAS
-login_port	=	Inloggningsport
-cancel	=	Avbryt
-show_volume_info	=	"Visa volyminformation"
+status_degraded	=	Trasig
+status_repairing	=	Reparerar
+status_read_only	=	Endast läsbar
+status_crashed	=	Kraschade
+storage_status	=	Lagringsstatus
+status_repairing	=	"Reparerar"
+data_scrubbing	=	Dataskrubbning
