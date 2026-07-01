@@ -423,13 +423,14 @@ get_volume_info(){
     fi
 
     # Build pool lookup: pool id -> num_id and pool status
-    declare -A pool_num pool_status_map
-    while IFS='|' read -r pool_id pool_num_id pool_st pool_scrub; do
+    declare -A pool_num pool_status_map pool_pct_map
+    while IFS='|' read -r pool_id pool_num_id pool_st pool_scrub pool_pct; do
         pool_num["$pool_id"]="$pool_num_id"
         local scrub_suffix=""
         [[ "$pool_scrub" == "scrubbing" ]] && scrub_suffix=" - Data Scrubbing"
         pool_status_map["$pool_id"]="${pool_st}${scrub_suffix}"
-    done < <(echo "$storage_json" | jq -r '.data.storagePools[] | "\(.id)|\(.num_id)|\(.status)|\(.scrubbingStatus // "")"')
+        pool_pct_map["$pool_id"]="$pool_pct"
+    done < <(echo "$storage_json" | jq -r '.data.storagePools[] | "\(.id)|\(.num_id)|\(.status)|\(.scrubbingStatus // "")|\(.progress.percent // "-1")"')
 
     local hdr_vol hdr_pool hdr_size hdr_pct hdr_status hdr_pool_status
     hdr_vol="$(txt common volume "Volume")"
@@ -453,7 +454,7 @@ get_volume_info(){
     label_vol="$(txt common volume "Volume")"
     label_pool="$(txt common storage_pool "Storage Pool")"
 
-    while IFS='|' read -r num_id pool_path total used vol_status; do
+    while IFS='|' read -r num_id pool_path total used vol_status vol_pct; do
         # Volume name
         vol_label="$label_vol $num_id"
 
@@ -494,9 +495,17 @@ get_volume_info(){
             status_str="${status_str#*::}"
         fi
 
+        if [[ "$vol_status" == "repairing" || "$vol_status" == "rebuilding" ]] \
+            && [[ "$vol_pct" != "-1" && -n "$vol_pct" ]]; then
+            local vol_pct_int
+            vol_pct_int=$(awk -v p="$vol_pct" 'BEGIN{printf "%.0f", p}')
+            status_str="${status_str} (${vol_pct_int}%)"
+        fi
+
         # Pool status
-        local pool_st pool_status_str
+        local pool_st pool_pct pool_status_str
         pool_st="${pool_status_map[$pool_path]}"
+        pool_pct="${pool_pct_map[$pool_path]}"
         case "$pool_st" in
             normal)     pool_status_str="healthy::$(txt common status_healthy "Healthy")" ;;
             degrade)    pool_status_str="critical::$(txt common status_degraded "Degraded")" ;;
@@ -509,6 +518,14 @@ get_volume_info(){
         esac
         if [[ -t 1 ]]; then  # Running in terminal
             pool_status_str="${pool_status_str#*::}"
+        fi
+
+        if [[ "$pool_pct" != "-1" && -n "$pool_pct" ]] \
+            && [[ "$pool_st" == "repairing" || "$pool_st" == "rebuilding" \
+            || "$pool_st" == "background" || "$pool_st" == "background_scrubbing" ]]; then
+            local pool_pct_int
+            pool_pct_int=$(awk -v p="$pool_pct" 'BEGIN{printf "%.0f", p}')
+            pool_status_str="${pool_status_str} (${pool_pct_int}%)"
         fi
 
         vol_nums+=("$vol_label")

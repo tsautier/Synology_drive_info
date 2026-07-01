@@ -585,7 +585,7 @@ _txt_lang="$_lang"   # or gui_lang, whatever you settle on
 cat << STYLE
 <style>
 body { font-family: Verdana, Arial, sans-serif; font-size: 13px; color: #333;
-       margin: 16px; margin-right: 14px; background: transparent; overflow-y: auto; }
+       margin: 16px; margin-right: 14px; background: transparent; overflow-y: auto; overflow-x: auto; }
 h2   { margin-top: 0; font-size: 15px; color: #333; }
 pre  { background: #f4f4f4; border: 1px solid #ddd; border-radius: 4px;
        padding: 12px; font-size: 12px; line-height: 1.6;
@@ -1005,6 +1005,7 @@ while IFS= read -r line; do
                             failing::*)  css_class="status-failing";  val="${val#failing::}"  ;;
                             *)           css_class="status"                                   ;;
                         esac
+                        css_class="$css_class status"
                         echo "<td class=\"$css_class\">$val</td>"
                         ;;
                     5)
@@ -1015,6 +1016,7 @@ while IFS= read -r line; do
                             failing::*)  css_class="status-failing";  val="${val#failing::}"  ;;
                             *)           css_class="vol-pool-status"                          ;;
                         esac
+                        css_class="$css_class vol-pool-status"
                         if [[ "$val" == *" - "* ]]; then
                             val_main="${val%% - *}"
                             val_suffix=" - ${val#* - }"
