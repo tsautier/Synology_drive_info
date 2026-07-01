@@ -8,6 +8,10 @@ err_sudofail_title	=	"Разрешения настроены неправиль
 err_sudofail_desc	=	"Запись sudoers существует, но команда sudo завершилась с ошибкой. Проверьте правильность записи:"
 err_sudofail_must_contain	=	"Она должна содержать точно:"
 err_see_details	=	"Подробнее см. в <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a>."
+err_smart_script_missing	=	"Файл smart_info.sh не найден."
+err_not_reachable	=	"Drive Info не установлен или недоступен."
+err_smart_timeout	=	"Превышено время ожидания данных S.M.A.R.T. Возможно, NAS занят выполнением проверки данных или проверки чётности. Повторите попытку позже."
+err_smart_failed	=	"Запрос не выполнен."
 
 [settings]
 settings	=	Настройки
@@ -27,6 +31,7 @@ manual_nas_list	=	Дополнительные NAS
 login_port	=	Порт входа в систему
 cancel	=	Отмена
 show_volume_info	=	"Показать сведения о томе"
+show_smart_important	=	"Показывать только важные значения S.M.A.R.T."
 
 [common]
 location	=	Расположение
@@ -61,3 +66,5 @@ status_crashed	=	Повреждение
 storage_status	=	Состояние системы хранения
 status_repairing	=	"Восстановление"
 data_scrubbing	=	Исправление ошибок данных
+smart_name	=	S.M.A.R.T.
+smart_view	=	"Просмотр S.M.A.R.T."

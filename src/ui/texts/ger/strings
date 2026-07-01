@@ -8,6 +8,10 @@ err_sudofail_title	=	"Berechtigungen nicht korrekt eingerichtet"
 err_sudofail_desc	=	"Der sudoers-Eintrag existiert, aber sudo ist fehlgeschlagen. Überprüfen Sie, ob der Eintrag korrekt ist:"
 err_sudofail_must_contain	=	"Er sollte genau Folgendes enthalten:"
 err_see_details	=	"Weitere Informationen finden Sie unter <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a>."
+err_smart_script_missing	=	"smart_info.sh nicht gefunden."
+err_not_reachable	=	"Drive Info ist nicht installiert oder nicht erreichbar."
+err_smart_timeout	=	"Zeitüberschreitung beim Warten auf S.M.A.R.T.-Daten. Das NAS führt möglicherweise gerade eine Datenbereinigung oder Paritätsprüfung durch. Versuchen Sie es später erneut."
+err_smart_failed	=	"Anfrage fehlgeschlagen."
 
 [settings]
 settings	=	Einstellungen
@@ -27,6 +31,7 @@ manual_nas_list	=	Weitere NAS
 login_port	=	Port für Anmeldung
 cancel	=	Abbrechen
 show_volume_info	=	"Volume-Informationen anzeigen"
+show_smart_important	=	"Nur wichtige S.M.A.R.T.-Werte anzeigen"
 
 [common]
 location	=	Ort
@@ -61,3 +66,5 @@ status_crashed	=	Abgestürzt
 storage_status	=	Speicherstatus
 status_repairing	=	"Wird repariert"
 data_scrubbing	=	Datenbereinigung
+smart_name	=	S.M.A.R.T.
+smart_view	=	"S.M.A.R.T. anzeigen"

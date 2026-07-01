@@ -1,3 +1,10 @@
+v2.0.25
+- Added SMART information. The text in the Status column for each drive is a link to the SMART info.
+- Added an option in the settings to only show important SMART info.
+- Added translations for all the error messages.
+- Bug for Dutch showing "Show volume information" in English.
+- Bug fix "Shows other local Synology NAS' info in the DSM language of the NAS running Drive Info".
+
 v2.0.24
 - Now shows Storage Pool status, including if data scrubbing is running.
 - Bug fix for "Find all local Synology NAS"​ and "Show volume information"​ showing the wrong toggle state if you change a toggle and click cancel or back and then click settings again.

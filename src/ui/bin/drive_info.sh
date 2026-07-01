@@ -18,9 +18,12 @@ if [[ $( whoami ) != "root" ]]; then
 fi
 
 # Check if script is running in an interactive shell
-if [[ -t 1 ]]; then
+if [[ -t 1 ]]; then  # Running in terminal
     echo "Running in an interactive shell (user terminal)."
 fi
+
+# Get DSM major version
+dsm=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)
 
 # Check if language entries exist in sudoers file, regardless of (ALL) vs (root)
 if [[ "$dsm" -ge "7" ]]; then
@@ -38,15 +41,31 @@ if [[ "$dsm" -ge "7" ]]; then
     fi
 fi
 
+# Add smart_info entries to sudoers.d if missing
+if [[ "$dsm" -ge "7" ]]; then
+    if ! grep -q "smart_info.sh /dev/sd" /etc/sudoers.d/drive_info 2>/dev/null; then
+        pkg=drive_info
+        file=/etc/sudoers.d/drive_info
+        script=/var/packages/drive_info/target/ui/bin/smart_info.sh
+        for flags in "" "-i" "-a" "-ia"; do
+            for dev in sd hd sata sas nvme nvc; do
+                if [[ -n "$flags" ]]; then
+                    echo "$pkg ALL=(root) NOPASSWD: $script $flags --dev=/dev/${dev}*" >> "$file"
+                else
+                    echo "$pkg ALL=(root) NOPASSWD: $script --dev=/dev/${dev}*" >> "$file"
+                fi
+            done
+        done
+        chmod 0440 "$file"
+    fi
+fi
+
 # Check if 1st argument is a DSM language code
 if [[ $1 =~ chs|cht|csy|dan|enu|fre|ger|hun|ita|jpn|krn|nld|nor|plk|ptb|ptg|rus|spn|sve|tha|trk ]]; then
     gui_lang="$1"
 else
     gui_lang=""
 fi
-
-# Get DSM major version
-dsm=$(/usr/syno/bin/synogetkeyvalue /etc.defaults/VERSION majorversion)
 
 # Load translated strings if running from within the installed package.
 # modules/get_text.sh and the texts/ folder won't exist if this script
@@ -471,7 +490,7 @@ get_volume_info(){
             background|background_scrubbing) status_str="healthy::$(txt common status_healthy "Healthy")" ;;
             *)          status_str="$vol_status" ;;
         esac
-        if [[ -t 1 ]]; then
+        if [[ -t 1 ]]; then  # Running in terminal
             status_str="${status_str#*::}"
         fi
 
@@ -488,7 +507,7 @@ get_volume_info(){
             background|background_scrubbing) pool_status_str="healthy::$(txt common status_healthy "Healthy") - $(txt common status_data_scrubbing "Data Scrubbing")" ;;
             *)          pool_status_str="$pool_st" ;;
         esac
-        if [[ -t 1 ]]; then
+        if [[ -t 1 ]]; then  # Running in terminal
             pool_status_str="${pool_status_str#*::}"
         fi
 

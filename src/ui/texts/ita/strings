@@ -8,6 +8,10 @@ err_sudofail_title	=	"Autorizzazioni non configurate correttamente"
 err_sudofail_desc	=	"La voce sudoers esiste, ma sudo non è riuscito. Verifica che la voce sia corretta:"
 err_sudofail_must_contain	=	"Deve contenere esattamente:"
 err_see_details	=	"Per i dettagli completi, consulta <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a>."
+err_smart_script_missing	=	"smart_info.sh non trovato."
+err_not_reachable	=	"Drive Info non è installato o non è raggiungibile."
+err_smart_timeout	=	"Timeout in attesa dei dati S.M.A.R.T. Il NAS potrebbe essere occupato con una verifica dei dati o un controllo di parità. Riprovare più tardi."
+err_smart_failed	=	"Richiesta fallita."
 
 [settings]
 settings	=	Impostazioni
@@ -27,6 +31,7 @@ manual_nas_list	=	NAS aggiuntivi
 login_port	=	Porta di accesso
 cancel	=	Annulla
 show_volume_info	=	"Mostra informazioni sul volume"
+show_smart_important	=	"Mostra solo i valori S.M.A.R.T. importanti"
 
 [common]
 location	=	Posizione
@@ -61,3 +66,5 @@ status_crashed	=	Bloccato
 storage_status	=	Stato archiviazione
 status_repairing	=	"Riparazione in corso"
 data_scrubbing	=	Pulitura dati
+smart_name	=	S.M.A.R.T.
+smart_view	=	"Visualizza S.M.A.R.T."

@@ -8,6 +8,10 @@ err_sudofail_title	=	"權限設定不正確"
 err_sudofail_desc	=	"sudoers 項目已存在，但 sudo 執行失敗。請檢查該項目是否正確："
 err_sudofail_must_contain	=	"它應該完全包含："
 err_see_details	=	"請參閱 <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a> 以取得完整詳情。"
+err_smart_script_missing	=	"找不到 smart_info.sh。"
+err_not_reachable	=	"Drive Info 未安裝或無法連線。"
+err_smart_timeout	=	"等待 S.M.A.R.T. 資料逾時。NAS 可能正在執行資料清除或同位元檢查。請稍後再試。"
+err_smart_failed	=	"請求失敗。"
 
 [settings]
 settings	=	設定
@@ -27,6 +31,7 @@ manual_nas_list	=	其他 NAS
 login_port	=	登入連接埠
 cancel	=	取消
 show_volume_info	=	"顯示磁碟區資訊"
+show_smart_important	=	"僅顯示重要的 S.M.A.R.T. 值"
 
 [common]
 location	=	位置
@@ -61,3 +66,5 @@ status_crashed	=	損毀
 storage_status	=	儲存空間狀態
 status_repairing	=	"修復中"
 data_scrubbing	=	Data Scrubbing
+smart_name	=	S.M.A.R.T.
+smart_view	=	"檢視 S.M.A.R.T."

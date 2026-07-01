@@ -8,6 +8,10 @@ err_sudofail_title	=	"Oprávnění nejsou nastavena správně"
 err_sudofail_desc	=	"Položka v sudoers existuje, ale příkaz sudo selhal. Zkontrolujte, zda je položka správná:"
 err_sudofail_must_contain	=	"Měla by obsahovat přesně:"
 err_see_details	=	"Úplné podrobnosti naleznete v <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a>."
+err_smart_script_missing	=	"Soubor smart_info.sh nebyl nalezen."
+err_not_reachable	=	"Drive Info není nainstalován nebo není dostupný."
+err_smart_timeout	=	"Vypršel časový limit čekání na data S.M.A.R.T. NAS může být zaneprázdněn čištěním dat nebo kontrolou parity. Zkuste to znovu později."
+err_smart_failed	=	"Požadavek selhal."
 
 [settings]
 settings	=	Nastavení
@@ -27,6 +31,7 @@ manual_nas_list	=	Další NAS
 login_port	=	Port pro přihlášení
 cancel	=	Storno
 show_volume_info	=	"Zobrazit informace o svazku"
+show_smart_important	=	"Zobrazit pouze důležité hodnoty S.M.A.R.T."
 
 [common]
 location	=	Umístění
@@ -61,3 +66,5 @@ status_crashed	=	Zhroucení
 storage_status	=	Stav úložiště
 status_repairing	=	"Opravuje se"
 data_scrubbing	=	Scrubbing dat
+smart_name	=	S.M.A.R.T.
+smart_view	=	"Zobrazit S.M.A.R.T."

@@ -8,6 +8,12 @@ err_sudofail_title	=	"Permissions not configured correctly"
 err_sudofail_desc	=	"The sudoers entry exists but sudo failed. Check the entry is correct:"
 err_sudofail_must_contain	=	"It should contain exactly:"
 err_see_details	=	"See <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a> for full details."
+err_smart_script_missing	=	"smart_info.sh not found."
+err_not_reachable	=	"Drive Info not installed or not reachable."
+err_smart_timeout	=	"Timed out waiting for SMART data. The NAS may be busy running a data scrub or parity check. Try again later."
+err_smart_failed	=	"Request failed."
+err_invalid_device	=	"Invalid device argument."
+err_invalid_option	=	"Invalid option."
 
 [settings]
 settings	=	Settings
@@ -27,6 +33,7 @@ manual_nas_list	=	Additional NAS
 login_port	=	Login port
 cancel	=	Cancel
 show_volume_info	=	"Show volume information"
+show_smart_important    = "Show only important S.M.A.R.T. values"
 
 [common]
 drive	=	Drive
@@ -61,3 +68,5 @@ volume_used	=	"Used"
 storage_status	=	Storage Status
 status_repairing	=	Repairing
 data_scrubbing	=	Data Scrubbing
+smart_name	=	S.M.A.R.T.
+smart_view	=	View S.M.A.R.T.

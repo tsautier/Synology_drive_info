@@ -121,13 +121,16 @@ if [[ "$_action" == "get_settings" ]]; then
     printf '\r\n'
 
     _discover_nas=$(synogetkeyvalue "$SETTINGS_CONF" discover_nas 2>/dev/null || echo "false")
-    _show_volume_info=$(synogetkeyvalue "$SETTINGS_CONF" show_volume_info 2>/dev/null || echo "true")
+    _show_volume_info=$(synogetkeyvalue "$SETTINGS_CONF" show_volume_info 2>/dev/null || echo "false")
+    _show_smart_important=$(synogetkeyvalue "$SETTINGS_CONF" show_smart_important 2>/dev/null || echo "false")
     _manual_count=$(synogetkeyvalue "$SETTINGS_CONF" manual_nas_count 2>/dev/null || echo "0")
     [[ -z "$_discover_nas" ]] && _discover_nas="false"
-    [[ -z "$_show_volume_info" ]] && _show_volume_info="true"
+    [[ -z "$_show_volume_info" ]] && _show_volume_info="false"
+    [[ -z "$_show_smart_important" ]] && _show_smart_important="false"
     [[ -z "$_manual_count" ]] && _manual_count="0"
 
-    printf '{"discover_nas":%s,"show_volume_info":%s,"manual_nas":[' "$_discover_nas" "$_show_volume_info"
+    printf '{"discover_nas":%s,"show_volume_info":%s,"show_smart_important":%s,"manual_nas":[' \
+        "$_discover_nas" "$_show_volume_info" "$_show_smart_important"
     _first=1
     for (( i=1; i<=_manual_count; i++ )); do
         _entry=$(synogetkeyvalue "$SETTINGS_CONF" "manual_nas${i}" 2>/dev/null)
@@ -174,16 +177,30 @@ if [[ "$_action" == "save_settings" ]]; then
     fi
 
     # Parse show_volume_info
-    _show_volume_info="true"
+    _show_volume_info="false"
     if [[ "${QUERY_STRING:-}" =~ (^|&)show_volume_info=([^&]*) ]]; then
         _val="${BASH_REMATCH[2]}"
-        [[ "$_val" == "false" ]] && _show_volume_info="false"
+        [[ "$_val" == "true" ]] && _show_volume_info="true"
     fi
 
     # Only write show_volume_info if value changed
     _cur_show_volume=$(synogetkeyvalue "$SETTINGS_CONF" show_volume_info 2>/dev/null || echo "")
     if [[ "$_cur_show_volume" != "$_show_volume_info" ]]; then
         synosetkeyvalue "$SETTINGS_CONF" show_volume_info "$_show_volume_info"
+        _changed=true
+    fi
+
+    # Parse show_smart_important
+    _show_smart_important="false"
+    if [[ "${QUERY_STRING:-}" =~ (^|&)show_smart_important=([^&]*) ]]; then
+        _val="${BASH_REMATCH[2]}"
+        [[ "$_val" == "true" ]] && _show_smart_important="true"
+    fi
+
+    # Only write show_smart_important if value changed
+    _cur_show_smart=$(synogetkeyvalue "$SETTINGS_CONF" show_smart_important 2>/dev/null || echo "")
+    if [[ "$_cur_show_smart" != "$_show_smart_important" ]]; then
+        synosetkeyvalue "$SETTINGS_CONF" show_smart_important "$_show_smart_important"
         _changed=true
     fi
 
@@ -280,6 +297,226 @@ if [[ "$_action" == "get_ha_passive" ]]; then
 fi
 
 #---------------------------------------------------------------------------
+# action=get_smart
+# Returns SMART data for a single drive as HTML fragment.
+# Calls smart_info.sh via sudo with the validated device path.
+#---------------------------------------------------------------------------
+if [[ "$_action" == "get_smart" ]]; then
+    printf 'Content-Type: text/html; charset=utf-8\r\n'
+    printf '\r\n'
+
+    _device=""
+    if [[ "${QUERY_STRING:-}" =~ (^|&)device=([^&]*) ]]; then
+        _device="${BASH_REMATCH[2]}"
+    fi
+
+    # Validate device - must be a known Synology device name pattern
+    if [[ ! "$_device" =~ ^(sd[a-z]{1,3}|hd[a-z]{1,3}|sata[0-9]+|sas[0-9]+|nvme[0-9]+n[0-9]+|nvc[0-9]+)$ ]]; then
+        echo "<p class=\"err\">$(txt errors err_invalid_device "Invalid device.")</p>"
+        exit 0
+    fi
+
+    SMART_SCRIPT="${TARGET_DIR}/ui/bin/smart_info.sh"
+    if [[ ! -f "$SMART_SCRIPT" ]]; then
+        echo "<p class=\"err\">$(txt errors err_smart_script_missing "smart_info.sh not found.")</p>"
+        exit 0
+    fi
+
+    # Read show_smart_important setting - when true, show only important attributes
+    # (default mode); when false/unset, show all attributes (-a flag)
+    _smart_important=$(synogetkeyvalue "$SETTINGS_CONF" show_smart_important 2>/dev/null || echo "false")
+    SMART_FLAGS=()
+    [[ "$_smart_important" != "true" ]] && SMART_FLAGS+=("-a")
+
+    if [[ "$dsm" -ge "7" ]]; then
+        SMART_OUTPUT=$(sudo "$SMART_SCRIPT" "${SMART_FLAGS[@]}" --dev="/dev/$_device" 2>&1)
+    else
+        SMART_OUTPUT=$(bash "$SMART_SCRIPT" "${SMART_FLAGS[@]}" --dev="/dev/$_device" 2>&1)
+    fi
+    _smart_rc=$?
+
+    if [[ $_smart_rc -ne 0 ]] && [[ "$SMART_OUTPUT" == *"err::invalid_device"* ]]; then
+        echo "<p class=\"err\">$(txt errors err_invalid_device "Invalid device argument.")</p>"
+        exit 0
+    fi
+    if [[ $_smart_rc -ne 0 ]] && [[ "$SMART_OUTPUT" == *"err::invalid_option"* ]]; then
+        echo "<p class=\"err\">$(txt errors err_invalid_option "Invalid option.")</p>"
+        exit 0
+    fi
+
+    #-----------------------------------------------------------------------
+    # Parse smart_info.sh sentinel-prefixed output into HTML.
+    # Sentinels: green:: red:: yellow:: cyan::  (colour, no row class)
+    # Drive header line starts with cyan::Drive / cyan::M.2 Drive / etc.
+    # SMART/health lines start with "SMART "
+    # -a SATA table: header row contains "ATTRIBUTE_NAME" and "FLAGS"
+    # SCSI table: header row contains "ATTRIBUTE_NAME" and "RAW_VALUE" (no FLAGS)
+    # NVMe lines: "Key: Value" prose, no leading numeric ID
+    # Default table: "  ID Name          Value" two-and-a-bit columns
+    #-----------------------------------------------------------------------
+    smart_in_table=0
+    smart_mode=""        # all_sata | scsi | default
+    smart_nvme_open=0
+
+    strip_sentinel() {
+        # Sets globals: _row_class (CSS class for <tr>, only set if sentinel is at line start),
+        #               _text (line with leading sentinel removed, for line-type detection)
+        local l="$1"
+        _row_class=""
+        case "$l" in
+            green::*)  _row_class="smart-green";  l="${l#green::}"  ;;
+            red::*)    _row_class="smart-red";     l="${l#red::}"    ;;
+            yellow::*) _row_class="smart-yellow";  l="${l#yellow::}" ;;
+            cyan::*)   _row_class="smart-cyan";    l="${l#cyan::}"   ;;
+            blue::*)   _row_class="smart-blue";    l="${l#blue::}"   ;;
+        esac
+        _text="$l"
+    }
+
+    colorize_inline() {
+        # Replaces any green::/red::/yellow::/cyan::/blue:: sentinel anywhere in the line
+        # (already HTML-escaped) with a <span class="..."> wrapping the rest of the line.
+        local l="$1"
+        l="${l//green::/<span class=\"smart-green\">}"
+        l="${l//red::/<span class=\"smart-red\">}"
+        l="${l//yellow::/<span class=\"smart-yellow\">}"
+        l="${l//cyan::/<span class=\"smart-cyan\">}"
+        l="${l//blue::/<span class=\"smart-blue\">}"
+        if [[ "$l" == *'<span class='* ]]; then
+            l="${l}</span>"
+        fi
+        echo "$l"
+    }
+
+    close_smart_table() {
+        if [[ $smart_in_table -eq 1 ]]; then
+            echo "</tbody></table>"
+            smart_in_table=0
+            smart_mode=""
+        fi
+        if [[ $smart_nvme_open -eq 1 ]]; then
+            echo "</tbody></table>"
+            smart_nvme_open=0
+        fi
+    }
+
+    while IFS= read -r smart_line; do
+        strip_sentinel "$smart_line"
+        line="$_text"
+        rclass="$_row_class"
+        trimmed="${line#"${line%%[![:space:]]*}"}"
+
+        # Blank line - close any open table
+        if [[ -z "$trimmed" ]]; then
+            close_smart_table
+            continue
+        fi
+
+        # Drive header line (cyan:: stripped already if present)
+        if [[ "$trimmed" =~ ^(Drive|M\.2\ Drive|System\ Drive|USB\ Drive) ]]; then
+            close_smart_table
+            esc="$(echo "$trimmed" | sed 's/</\&lt;/g;s/>/\&gt;/g')"
+            cls="${rclass:-smart-cyan}"
+            echo "<div id=\"smart-panel-drive-title\" class=\"$cls\">$esc</div>"
+            continue
+        fi
+
+        # SMART health / error log prose lines (sentinel may be mid-line, e.g. "...: green::PASSED")
+        if [[ "$trimmed" =~ ^SMART ]]; then
+            esc="$(echo "$trimmed" | sed 's/</\&lt;/g;s/>/\&gt;/g')"
+            esc="$(colorize_inline "$esc")"
+            echo "<div id=\"smart-panel-prose\">$esc</div>"
+            continue
+        fi
+
+        # Separator line - opens a table (header row follows next), some smart_info.sh
+        # versions emit one before the header, others don't.
+        if [[ "$trimmed" =~ ^-+$ ]]; then
+            smart_in_table=1
+            smart_mode=""
+            continue
+        fi
+
+        # Header row for -a (SATA) or SCSI table - detected directly even with no
+        # preceding separator line, since some smart_info.sh output omits it.
+        if [[ "$trimmed" =~ ATTRIBUTE_NAME ]] && [[ $smart_in_table -eq 0 || -z "$smart_mode" ]]; then
+            smart_in_table=1
+            if [[ "$trimmed" =~ FLAGS ]]; then
+                smart_mode="all_sata"
+                echo '<table><thead><tr><th>ID#</th><th>Attribute</th><th>Flags</th><th>Value</th><th>Worst</th><th>Thresh</th><th>Fail</th><th>Raw</th></tr></thead><tbody>'
+            elif [[ "$trimmed" =~ RAW_VALUE ]]; then
+                smart_mode="scsi"
+                echo '<table class="smart-table-compact"><thead><tr><th>ID#</th><th>Attribute</th><th>Raw Value</th></tr></thead><tbody>'
+            fi
+            continue
+        fi
+
+        # Default mode two-column table: "ID Name   RawValue" (sentinel is on the raw value)
+        # Must be checked before the generic NVMe colon check, since raw values can
+        # themselves contain "::" (e.g. red::368).
+        if [[ $smart_in_table -eq 0 ]] && [[ "$trimmed" =~ ^[0-9] ]]; then
+            if [[ $smart_nvme_open -eq 0 ]]; then
+                echo '<table class="smart-table-compact"><thead><tr><th>ID#</th><th>Attribute</th><th>Raw Value</th></tr></thead><tbody>'
+                smart_nvme_open=1
+            fi
+            esc="$(echo "$trimmed" | sed 's/</\&lt;/g;s/>/\&gt;/g')"
+            id="$(echo "$esc" | awk '{print $1}')"
+            raw="$(echo "$esc" | awk '{print $NF}')"
+            raw="$(colorize_inline "$raw")"
+            name="$(echo "$esc" | awk '{$1="";$NF="";print}' | sed 's/^ *//;s/ *$//')"
+            name="$(colorize_inline "$name")"
+            echo "<tr><td>$id</td><td>$name</td><td>$raw</td></tr>"
+            continue
+        fi
+
+        # NVMe "Key: Value" prose line (no table context, has a colon, not SMART/Drive line)
+        if [[ $smart_in_table -eq 0 ]] && [[ "$trimmed" == *:* ]]; then
+            if [[ $smart_nvme_open -eq 0 ]]; then
+                echo '<table class="smart-table-compact"><tbody>'
+                smart_nvme_open=1
+            fi
+            key="${trimmed%%:*}"
+            val="${trimmed#*:}"
+            val="${val#"${val%%[![:space:]]*}"}"
+            key="$(echo "$key" | sed 's/</\&lt;/g;s/>/\&gt;/g')"
+            val="$(echo "$val" | sed 's/</\&lt;/g;s/>/\&gt;/g')"
+            val="$(colorize_inline "$val")"
+            row_cls=""
+            [[ -n "$rclass" ]] && row_cls=" class=\"smart-row-${rclass#smart-}\""
+            echo "<tr${row_cls}><td>$key</td><td>$val</td></tr>"
+            continue
+        fi
+
+        # Table data rows
+        if [[ $smart_in_table -eq 1 ]]; then
+            esc="$(echo "$trimmed" | sed 's/</\&lt;/g;s/>/\&gt;/g')"
+            row_cls=""
+            [[ -n "$rclass" ]] && row_cls=" class=\"smart-row-${rclass#smart-}\""
+            if [[ "$smart_mode" == "all_sata" ]]; then
+                # ID# ATTRIBUTE_NAME FLAGS VALUE WORST THRESH FAIL RAW_VALUE
+                IFS='|' read -r id name flags value worst thresh fail raw <<< "$(echo "$esc" | awk '{id=$1;name=$2;flags=$3;value=$4;worst=$5;thresh=$6;fail=$7;$1=$2=$3=$4=$5=$6=$7="";raw=$0;sub(/^ +/,"",raw);printf "%s|%s|%s|%s|%s|%s|%s|%s",id,name,flags,value,worst,thresh,fail,raw}')"
+                echo "<tr${row_cls}><td>$id</td><td>$name</td><td>$flags</td><td>$value</td><td>$worst</td><td>$thresh</td><td>$fail</td><td>$raw</td></tr>"
+            elif [[ "$smart_mode" == "scsi" ]]; then
+                # ID# ATTRIBUTE_NAME (multi-word) RAW_VALUE - take first and last field, middle is name
+                id="$(echo "$esc" | awk '{print $1}')"
+                raw="$(echo "$esc" | awk '{print $NF}')"
+                name="$(echo "$esc" | awk '{$1="";$NF="";print}' | sed 's/^ *//;s/ *$//')"
+                echo "<tr${row_cls}><td>$id</td><td>$name</td><td>$raw</td></tr>"
+            fi
+            continue
+        fi
+
+        # Fallback - unknown line format, show as-is
+        esc="$(echo "$trimmed" | sed 's/</\&lt;/g;s/>/\&gt;/g')"
+        echo "<div>$esc</div>"
+
+    done <<< "$SMART_OUTPUT"
+    close_smart_table
+
+    exit 0
+fi
+
+#---------------------------------------------------------------------------
 # Default action: render main page HTML
 # Settings are embedded in the same page and shown/hidden via JS.
 #---------------------------------------------------------------------------
@@ -291,8 +528,10 @@ printf '\r\n'
 _discover_nas=$(synogetkeyvalue "$SETTINGS_CONF" discover_nas 2>/dev/null || echo "false")
 _show_volume_info=$(synogetkeyvalue "$SETTINGS_CONF" show_volume_info 2>/dev/null || echo "true")
 _manual_count=$(synogetkeyvalue "$SETTINGS_CONF" manual_nas_count 2>/dev/null || echo "0")
+_show_smart_important=$(synogetkeyvalue "$SETTINGS_CONF" show_smart_important 2>/dev/null || echo "true")
+[[ -z "$_show_smart_important" ]] && _show_smart_important="false"
 [[ -z "$_discover_nas" ]] && _discover_nas="false"
-[[ -z "$_show_volume_info" ]] && _show_volume_info="true"
+[[ -z "$_show_volume_info" ]] && _show_volume_info="false"
 [[ -z "$_manual_count" ]] && _manual_count="0"
 
 # Build manual NAS JSON array for JS
@@ -335,7 +574,12 @@ _txt_model=$(txt common model "Model")
 _txt_serial=$(txt common serial_number "Serial Number")
 _txt_status=$(txt common status "Status")
 _txt_volume=$(txt common volume "Volume")
+_txt_smart_view=$(txt common smart_view "View S.M.A.R.T.")
 _txt_show_volume_info=$(txt settings show_volume_info "Show volume information")
+_txt_show_smart_important=$(txt settings show_smart_important "Show only important S.M.A.R.T. values")
+_txt_not_reachable=$(txt errors err_not_reachable "Drive Info not installed or not reachable.")
+_txt_smart_timeout=$(txt errors err_smart_timeout "Timed out waiting for SMART data. The NAS may be busy (e.g. running a data scrub or parity check) - try again shortly.")
+_txt_smart_failed=$(txt errors err_smart_failed "Request failed.")
 _txt_lang="$_lang"   # or gui_lang, whatever you settle on
 
 cat << STYLE
@@ -407,6 +651,7 @@ a    { color: #0073c0; }
 .toggle-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
 #discover-row { padding-left: 8px; }
 #volume-info-row { padding-left: 8px; }
+#smart-important-row { padding-left: 8px; }
 .toggle { position: relative; display: inline-block; width: 40px; height: 22px; }
 .toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0;
@@ -450,6 +695,46 @@ tr.nas-row-disabled td.port-cell input { color: #bbb; }
 .save-feedback { display: inline-block; margin-right: auto; color: #1CA600;
                  font-size: 12px; opacity: 0; transition: opacity 0.3s;
                  align-self: center; }
+/* SMART panel */
+.smart-btn { background: none; border: none; cursor: pointer;
+             font-family: Verdana, Arial, sans-serif; font-size: 13px;
+             padding: 0; text-decoration: underline dotted; }
+.smart-btn.status-healthy  { color: #1CA600; }
+.smart-btn.status-warning  { color: #FF7F00; }
+.smart-btn.status-critical { color: #E64040; }
+.smart-btn.status-failing  { color: #E64040; }
+.smart-btn.status          { color: #333; }
+#smart-panel { position: fixed; top: 0; right: 0; width: auto; max-width: 100%;
+               min-width: 430px;
+               height: 100%; background: white; box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+               transform: translateX(100%); transition: transform 0.25s ease; z-index: 1000;
+               overflow-y: auto; overflow-x: auto; padding: 16px; box-sizing: border-box; }
+#smart-panel.open { transform: translateX(0); }
+#smart-panel h3 { margin-top: 0; font-size: 14px; color: #333; }
+#smart-panel-topbar { display: flex; justify-content: flex-end;
+                      margin-bottom: 4px; padding-right: 8px; }
+.smart-cyan { color: #057FEB; }
+.smart-green  { color: #1CA600; }
+.smart-red    { color: #E64040; }
+.smart-yellow { color: #FF7F00; }
+.smart-blue   { color: #0073c0; }
+#smart-panel-drive-title { font-size: 14px; font-weight: bold; margin-bottom: 14px; white-space: nowrap; }
+#smart-panel-prose { font-size: 12px; color: #555; margin: 2px 0 10px 0; white-space: nowrap; }
+#smart-panel table { width: auto; min-width: 100%; border-collapse: collapse;
+                      margin-top: 6px; table-layout: auto; }
+#smart-panel table.smart-table-compact { min-width: 0; }
+#smart-panel th, #smart-panel td { white-space: nowrap; }
+#smart-panel th { text-align: left; padding: 4px 8px; border-bottom: 2px solid #ccc; color: #555; }
+#smart-panel td { padding: 3px 8px; border-bottom: 1px solid #eee; }
+#smart-panel tr.smart-row-yellow td { background: #fff6e8; }
+#smart-panel tr.smart-row-red td { background: #fdeaea; }
+#smart-panel tr.smart-row-green td { background: #eefcea; }
+#smart-panel tr.smart-row-blue td { background: #eaf4fc; }
+#smart-panel td, #smart-panel th { padding: 3px 8px; }
+#smart-panel .smart-fail { color: #E64040; font-weight: bold; }
+#smart-overlay { display: none; position: fixed; top: 0; left: 0;
+                 width: 100%; height: 100%; z-index: 999; }
+#smart-overlay.open { display: block; }
 </style>
 STYLE
 
@@ -634,6 +919,14 @@ while IFS= read -r line; do
         continue
     fi
 
+    # Skip table - silently consume data rows
+    if [[ $in_table -eq 1 ]] && [[ "$table_type" == "skip" ]] && [[ -n "$trimmed" ]]; then continue; fi
+
+    # Skip table - blank line ends the skip
+    if [[ $in_table -eq 1 ]] && [[ "$table_type" == "skip" ]] && [[ -z "$trimmed" ]]; then
+        in_table=0; table_type=""; continue
+    fi
+
     # Header row
     if [[ $in_table -eq 1 ]] && [[ ${#headers[@]} -eq 0 ]] && [[ -n "$trimmed" ]]; then
         IFS=$'\n' read -r -d '' -a headers <<< "$(echo "$trimmed" | grep -oP '\S.*?(?=  |\s*$)')" || true
@@ -653,7 +946,7 @@ while IFS= read -r line; do
             table_type="volume"
             if [[ "$_show_volume_info" != "true" ]]; then
                 # Skip volume table entirely
-                in_table=0; table_type=""; headers=(); continue
+                in_table=1; table_type="skip"; headers=(); continue
             fi
             echo '<div class="vol-table-wrapper"><table class="vol-table"><colgroup><col class="vol-name"><col class="vol-pool"><col class="vol-size"><col class="vol-used"><col class="status"><col class="vol-pool-status"></colgroup>'
         else
@@ -751,7 +1044,7 @@ while IFS= read -r line; do
                         failing::*)  css_class="status-failing";  val="${val#failing::}"  ;;
                         *)           css_class="status"                                   ;;
                     esac
-                    echo "<td class=\"$css_class\">$val</td>"
+                    echo "<td class=\"$css_class\"><button class=\"smart-btn $css_class\" onclick=\"showSmartPanel(this)\" title=\"${_txt_smart_view}\">$val</button></td>"
                 else
                     echo "<td>$val</td>"
                 fi
@@ -788,6 +1081,10 @@ echo '<div id="remote-nas-container"></div>'
 # HA passive node container - populated by JS after page load
 echo '<div id="ha-passive-container"></div>'
 
+# SMART info panel
+echo "<div id=\"smart-overlay\" onclick=\"closeSmartPanel()\"></div>"
+echo "<div id=\"smart-panel\"><div id=\"smart-panel-topbar\"><button class=\"icon-btn\" onclick=\"closeSmartPanel()\" title=\"${_txt_back}\"><img src=\"/webman/3rdparty/drive_info/images/bt_home.png\" width=\"20\" height=\"20\" alt=\"\"></button></div><div id=\"smart-panel-content\"></div></div>"
+
 # Close main-view div
 echo '</div>'
 
@@ -812,6 +1109,13 @@ cat << SETTINGSHTML
         <span class="toggle-slider"></span>
       </label>
       <span>${_txt_show_volume_info}</span>
+    </div>
+    <div class="toggle-row" id="smart-important-row">
+      <label class="toggle">
+        <input type="checkbox" id="show_smart_important" $([ "$_show_smart_important" = "true" ] && echo "checked")>
+        <span class="toggle-slider"></span>
+      </label>
+      <span>${_txt_show_smart_important}</span>
     </div>
   </div>
 
@@ -847,6 +1151,7 @@ var nasData = ${_manual_json};
 var nasDataSaved = JSON.parse(JSON.stringify(nasData));  // snapshot for Cancel
 var discoverNasSaved = ${_discover_nas};                 // snapshot for Cancel
 var showVolumeInfoSaved = ${_show_volume_info};          // snapshot for Cancel
+var showImportantSMART = ${_show_smart_important};       // snapshot for Cancel
 var txtRemove = "${_txt_remove}";
 var viewer_lang = '${_lang}';
 var dirty = false;  // true only after settings have been saved
@@ -869,6 +1174,7 @@ function cancelSettings() {
     nasData = JSON.parse(JSON.stringify(nasDataSaved));
     document.getElementById('discover_nas').checked = discoverNasSaved;
     document.getElementById('show_volume_info').checked = showVolumeInfoSaved;
+    document.getElementById('show_smart_important').checked = showImportantSMART;
     document.getElementById('settings-panel').style.display = 'none';
     document.getElementById('main-view').style.display = '';
     var btn = document.getElementById('nav-btn');
@@ -949,19 +1255,54 @@ function saveSettings() {
 
     var discover = document.getElementById('discover_nas').checked ? 'true' : 'false';
     var showVolumeInfo = document.getElementById('show_volume_info').checked ? 'true' : 'false';
+    var showSmartImportant = document.getElementById('show_smart_important').checked ? 'true' : 'false';
     var qs = 'action=save_settings&discover_nas=' + discover +
              '&show_volume_info=' + showVolumeInfo +
+             '&show_smart_important=' + showSmartImportant +
              '&manual_nas_count=' + valid.length;
+
     for (var j = 0; j < valid.length; j++) {
         qs += '&manual_nas' + (j + 1) + '=' + encodeURIComponent(valid[j]);
     }
+
+    // Only a change to show_smart_important needs no full reload, since it only
+    // affects the on-demand SMART panel fetch, not the main drive table.
+    var validSaved = [];
+    for (var k = 0; k < nasDataSaved.length; k++) {
+        var sh = (nasDataSaved[k].hostname || '').trim();
+        var sip = (nasDataSaved[k].ip || '').trim();
+        var sport = (nasDataSaved[k].port || '').trim() || '5000';
+        var sen = nasDataSaved[k].enabled !== false;
+        if (sh === '' && sip === '') continue;
+        validSaved.push(sh + ',' + sip + ',' + sport + ',' + (sen ? '1' : '0'));
+    }
+    var nasChanged = JSON.stringify(valid) !== JSON.stringify(validSaved);
+    var needsReload = (discover !== String(discoverNasSaved)) ||
+                       (showVolumeInfo !== String(showVolumeInfoSaved)) ||
+                       nasChanged;
 
     var xhr = new XMLHttpRequest();
     xhr.open('GET', 'api.cgi?' + qs, true);
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
-            // Always reload after Save so changes take effect immediately
-            window.location.href = 'api.cgi?_ts=' + new Date().getTime();
+            if (needsReload) {
+                window.location.href = 'api.cgi?_ts=' + new Date().getTime();
+            } else {
+                // Update saved snapshots in place and return to main view without reload
+                showImportantSMART = (showSmartImportant === 'true');
+                nasDataSaved = JSON.parse(JSON.stringify(nasData));
+                discoverNasSaved = (discover === 'true');
+                showVolumeInfoSaved = (showVolumeInfo === 'true');
+                document.getElementById('settings-panel').style.display = 'none';
+                document.getElementById('main-view').style.display = '';
+                var btn = document.getElementById('nav-btn');
+                btn.innerHTML = '<img src="/webman/3rdparty/drive_info/images/bt_gear.png" width="20" height="20" alt="">';
+                btn.title = '${_txt_settings}';
+                btn.onclick = showSettings;
+                var fb = document.getElementById('save-feedback');
+                fb.style.opacity = '1';
+                setTimeout(function(){ fb.style.opacity = '0'; }, 1500);
+            }
         }
     };
     xhr.send();
@@ -1178,6 +1519,8 @@ function fetchDriveTable(section, url) {
             html = html.replace(/<div id="settings-panel"[\s\S]*<\/div>/gi, '');
             html = html.replace(/<div class="topbar"[\s\S]*?<\/div>/gi, '');
             html = html.replace(/<div id="main-view"[^>]*>/gi, '');
+            html = html.replace(/<div id="smart-overlay"[^>]*>[\s\S]*?<\/div>/gi, '');
+            html = html.replace(/<div id="smart-panel"[\s\S]*?<\/div>\s*<\/div>/gi, '');
             html = html.replace(/<h2>[\s\S]*?<\/h2>/gi, '');
             section.innerHTML += html;
         } else {
@@ -1187,13 +1530,49 @@ function fetchDriveTable(section, url) {
     fxhr.onerror = function() {
         var sp = section.querySelector('.nas-spinner');
         if (sp) sp.parentNode.removeChild(sp);
-        section.innerHTML += '<p class="remote-err">drive_info not installed or not reachable</p>';
+        section.innerHTML += '<p class="remote-err">${_txt_not_reachable}</p>';
     };
     fxhr.send();
 }
 
 function escHtml(s) {
     return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ---------------------------------------------------------------------------
+// SMART panel
+// ---------------------------------------------------------------------------
+function showSmartPanel(btn) {
+    var row = btn.closest('tr');
+    var device = row.cells[0].textContent.trim();
+    var content = document.getElementById('smart-panel-content');
+    content.innerHTML = '<div style="margin:8px 0;"><img src="/webman/3rdparty/drive_info/images/wait_triangle_blue_40p.gif" width="30" height="30" style="vertical-align:middle;margin-right:6px;"><span style="font-size:12px;">${_txt_loading}</span></div>';
+    document.getElementById('smart-panel').classList.add('open');
+    document.getElementById('smart-overlay').classList.add('open');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'api.cgi?action=get_smart&device=' + encodeURIComponent(device), true);
+    xhr.timeout = 60000;
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState !== 4) return;
+        if (xhr.status === 200) {
+            content.innerHTML = xhr.responseText;
+        } else if (xhr.status !== 0) {
+            content.innerHTML = '<p class="err">HTTP ' + xhr.status + '</p>';
+        }
+    };
+    xhr.ontimeout = function() {
+        content.innerHTML = '<p class="err">${_txt_smart_timeout}</p>';
+    };
+    xhr.onerror = function() {
+        content.innerHTML = '<p class="err">${_txt_smart_failed}</p>';
+    };
+    xhr.send();
+}
+
+function closeSmartPanel() {
+    document.getElementById('smart-panel').classList.remove('open');
+    document.getElementById('smart-overlay').classList.remove('open');
 }
 
 fetchHAPassive();

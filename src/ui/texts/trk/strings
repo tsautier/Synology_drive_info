@@ -8,6 +8,10 @@ err_sudofail_title	=	"İzinler doğru yapılandırılmamış"
 err_sudofail_desc	=	"sudoers girişi mevcut ancak sudo başarısız oldu. Girişin doğru olduğundan emin olun:"
 err_sudofail_must_contain	=	"Tam olarak şunu içermelidir:"
 err_see_details	=	"Tüm ayrıntılar için <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a> sayfasına bakın."
+err_smart_script_missing	=	"smart_info.sh bulunamadı."
+err_not_reachable	=	"Drive Info yüklü değil veya erişilemiyor."
+err_smart_timeout	=	"S.M.A.R.T. verileri beklenirken zaman aşımına uğradı. NAS, veri temizleme veya eşlik denetimi çalıştırıyor olabilir. Daha sonra tekrar deneyin."
+err_smart_failed	=	"İstek başarısız oldu."
 
 [settings]
 settings	=	Ayarlar
@@ -27,6 +31,7 @@ manual_nas_list	=	Ek NAS
 login_port	=	Oturum açma bağlantı noktası
 cancel	=	İptal
 show_volume_info	=	"Birim bilgilerini göster"
+show_smart_important	=	"Yalnızca önemli S.M.A.R.T. değerlerini göster"
 
 [common]
 location	=	Konum
@@ -61,3 +66,5 @@ status_crashed	=	Çöktü
 storage_status	=	Depolama Durumu
 status_repairing	=	"Onarılıyor"
 data_scrubbing	=	Veri Düzeltme
+smart_name	=	S.M.A.R.T.
+smart_view	=	"S.M.A.R.T. görüntüle"

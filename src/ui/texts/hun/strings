@@ -8,6 +8,10 @@ err_sudofail_title	=	"A jogosultságok nincsenek megfelelően beállítva"
 err_sudofail_desc	=	"A sudoers bejegyzés létezik, de a sudo meghiúsult. Ellenőrizze, hogy a bejegyzés helyes:"
 err_sudofail_must_contain	=	"Pontosan ezt kell tartalmaznia:"
 err_see_details	=	"A teljes részletekért lásd: <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a>."
+err_smart_script_missing	=	"A smart_info.sh nem található."
+err_not_reachable	=	"A Drive Info nincs telepítve vagy nem érhető el."
+err_smart_timeout	=	"Időtúllépés a S.M.A.R.T. adatokra való várakozás közben. Lehet, hogy a NAS éppen adattisztítást vagy paritásellenőrzést végez. Próbálja meg később."
+err_smart_failed	=	"A kérés sikertelen."
 
 [settings]
 settings	=	Beállítások
@@ -27,6 +31,7 @@ manual_nas_list	=	További NAS
 login_port	=	Bejelentkezési port
 cancel	=	Mégse
 show_volume_info	=	"Kötetinformációk megjelenítése"
+show_smart_important	=	"Csak a fontos S.M.A.R.T. értékek megjelenítése"
 
 [common]
 location	=	Hely
@@ -61,3 +66,5 @@ status_crashed	=	Tönkrement
 storage_status	=	Tárolási állapot
 status_repairing	=	"Javítás folyamatban"
 data_scrubbing	=	Adattisztítás
+smart_name	=	S.M.A.R.T.
+smart_view	=	"S.M.A.R.T. megtekintése"

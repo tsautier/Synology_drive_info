@@ -8,6 +8,10 @@ err_sudofail_title	=	"Behörigheter är inte korrekt konfigurerade"
 err_sudofail_desc	=	"Sudoers-posten finns, men sudo misslyckades. Kontrollera att posten är korrekt:"
 err_sudofail_must_contain	=	"Den bör innehålla exakt:"
 err_see_details	=	"Se <a href="https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md" target="_blank">set_package_permissions.md</a> för fullständiga detaljer."
+err_smart_script_missing	=	"smart_info.sh hittades inte."
+err_not_reachable	=	"Drive Info är inte installerat eller inte nåbart."
+err_smart_timeout	=	"Tidsgränsen överskreds vid väntan på S.M.A.R.T.-data. NAS:en kanske är upptagen med datarensning eller paritetscheck. Försök igen senare."
+err_smart_failed	=	"Begäran misslyckades."
 
 [settings]
 settings	=	Inställningar
@@ -27,6 +31,7 @@ manual_nas_list	=	Ytterligare NAS
 login_port	=	Inloggningsport
 cancel	=	Avbryt
 show_volume_info	=	"Visa volyminformation"
+show_smart_important	=	"Visa endast viktiga S.M.A.R.T.-värden"
 
 [common]
 drive_id	=	Disk-ID
@@ -60,3 +65,5 @@ status_crashed	=	Kraschade
 storage_status	=	Lagringsstatus
 status_repairing	=	"Reparerar"
 data_scrubbing	=	Dataskrubbning
+smart_name	=	S.M.A.R.T.
+smart_view	=	"Visa S.M.A.R.T."
