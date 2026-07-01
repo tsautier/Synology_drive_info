@@ -1,3 +1,8 @@
+v2.0.27
+- Updated package's description for all languages.
+- Added missing Thai package description.
+- Bug fix for SAS drives showing a lot of "debug: command no found" errors.
+
 v2.0.26
 - Bug fix for showing, or trying to show, SMART info for drives on the Synology running Drive Info when a drive from another local Synology was selected.
 

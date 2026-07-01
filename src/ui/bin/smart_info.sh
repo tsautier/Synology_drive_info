@@ -52,6 +52,10 @@ else
     smartctl=$(which smartctl)
 fi
 
+debug() {
+    [[ $debug == "yes" ]] && echo "DEBUG: $*"
+}
+
 not_flash_drive(){ 
     # $1 is /sys/block/sata1 /sys/block/usb1 etc
     # Check if drive is flash drive (not supported by smartctl)
@@ -72,7 +76,7 @@ is_usb(){
 }
 
 # Check for flags with getopt
-if options="$(getopt -o abcdefghijklmnopqrstuvwxyz0123456789 -l dev:,all,increased -- "$@")"; then
+if options="$(getopt -o abcdefghijklmnopqrstuvwxyz0123456789 -l dev:,all,increased,debug -- "$@")"; then
     eval set -- "$options"
     while true; do
         case "${1,,}" in
@@ -128,6 +132,9 @@ if options="$(getopt -o abcdefghijklmnopqrstuvwxyz0123456789 -l dev:,all,increas
                 ;;
             -i|--increased)     # Only display increased attributes
                 increased=yes
+                ;;
+            -d|--debug)         # Show SAS debug messages
+                debug=yes
                 ;;
             --)
                 shift
