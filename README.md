@@ -11,10 +11,8 @@
 
 DSM package to show drive device id, DSM drive number, location, model, serial number and health for all drives in your Synology NAS.
   - Helps you map device ids in logs to the correct drive in Storage Manager.
-
-Can also show drive information for other local Synology NAS.
-
-Now shows data scrubbing status, RAID rebuilding/repairing status and S.M.A.R.T. info.
+  - Can also show drive information for other local Synology NAS.
+  - Now shows data scrubbing status, RAID rebuilding/repairing status and S.M.A.R.T. info.
 
 Available for DSM 7 and DSM 6.
 
