@@ -569,6 +569,7 @@ _txt_saved=$(txt settings saved "Saved")
 _txt_add=$(txt settings add_device "Add a Device")
 _txt_back=$(txt settings back "Back")
 _txt_cancel=$(txt settings cancel "Cancel")
+_txt_reload=$(txt common reload "Reload")
 _txt_slot=$(txt common drive_id "Drive ID")
 _txt_model=$(txt common model "Model")
 _txt_serial=$(txt common serial_number "Serial Number")
@@ -635,13 +636,14 @@ th.vol-name, th.vol-pool, th.vol-size, th.vol-used, th.vol-pool-status { white-s
 .err { color: #c00; }
 a    { color: #0073c0; }
 /* Top bar - shared by both views */
-.topbar { display: flex; justify-content: flex-end; margin-bottom: 4px; padding-right: 8px; }
+.topbar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 4px; padding-right: 8px; }
 .icon-btn { background: #e8eef3; border: 1px solid #e8eef3; border-radius: 4px;
             cursor: pointer; padding: 4px 10px; line-height: 0; }
 .icon-btn:hover { background: #e8eef3; border-color: #aaa; }
 .icon-btn:disabled { cursor: default; border-color: #e8eef3; }
 .icon-btn:disabled:hover { border-color: #e8eef3; }
 .icon-btn:disabled img { content: url('/webman/3rdparty/drive_info/images/bt_gear_disabled.png'); }
+#reload-btn:disabled img { content: url('/webman/3rdparty/drive_info/images/bt_reload_disabled.png'); }
 /* Remote NAS sections */
 .remote-section { margin-top: 20px; }
 #ha-passive-container { margin-top: 20px; }
@@ -747,6 +749,9 @@ STYLE
 #---------------------------------------------------------------------------
 cat << TOPBAR
 <div class="topbar">
+  <button class="icon-btn" id="reload-btn"
+          onclick="reloadPage()"
+          title="${_txt_reload}" disabled><img src="/webman/3rdparty/drive_info/images/bt_reload.png" width="20" height="20" alt=""></button>
   <button class="icon-btn" id="nav-btn"
           onclick="showSettings()"
           title="${_txt_settings}" disabled><img src="/webman/3rdparty/drive_info/images/bt_gear.png" width="20" height="20" alt=""></button>
@@ -775,7 +780,7 @@ if [[ "$dsm" -ge "7" ]]; then
 <p>$(txt errors err_noperms_desc "This package needs elevated permissions to read drive information.")</p>
 <p>$(txt errors err_see_details "See <a href=\"https://github.com/007revad/Synology_drive_info/blob/main/set_package_permissions.md\" target=\"_blank\">set_package_permissions.md</a> for full details.")</p>
 </div>
-<script>document.getElementById("nav-btn").disabled=false;</script>
+<script>document.getElementById("nav-btn").disabled=false;document.getElementById("reload-btn").disabled=false;</script>
 NOPERMS
         exit 0
     fi
@@ -792,8 +797,12 @@ cat << SPINNER
 function showResult(html) {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('drive-table').innerHTML = html;
-    var btn = document.getElementById('nav-btn');
-    btn.disabled = false;
+    document.getElementById('nav-btn').disabled = false;
+    document.getElementById('reload-btn').disabled = false;
+}
+
+function reloadPage() {
+    window.location.href = 'api.cgi?_ts=' + new Date().getTime();
 }
 </script>
 SPINNER
@@ -810,7 +819,7 @@ STDERR_OUT=$(cat "$STDERR_TMP")
 rm -f "$STDERR_TMP"
 
 # Clear spinner and enable settings button
-echo '<script>document.getElementById("loading").style.display="none";document.getElementById("nav-btn").disabled=false;</script>'
+echo '<script>document.getElementById("loading").style.display="none";document.getElementById("nav-btn").disabled=false;document.getElementById("reload-btn").disabled=false;</script>'
 
 # Check if sudo failed
 if [[ "$dsm" -ge "7" ]]; then
@@ -1183,6 +1192,7 @@ var dirty = false;  // true only after settings have been saved
 function showSettings() {
     document.getElementById('main-view').style.display = 'none';
     document.getElementById('settings-panel').style.display = '';
+    document.getElementById('reload-btn').style.display = 'none';
     var btn = document.getElementById('nav-btn');
     btn.innerHTML = '<img src="/webman/3rdparty/drive_info/images/bt_home.png" width="20" height="20" alt="">';
     btn.title = '${_txt_back}';
@@ -1198,6 +1208,7 @@ function cancelSettings() {
     document.getElementById('show_smart_important').checked = showImportantSMART;
     document.getElementById('settings-panel').style.display = 'none';
     document.getElementById('main-view').style.display = '';
+    document.getElementById('reload-btn').style.display = '';
     var btn = document.getElementById('nav-btn');
     btn.innerHTML = '<img src="/webman/3rdparty/drive_info/images/bt_gear.png" width="20" height="20" alt="">';
     btn.title = '${_txt_settings}';
@@ -1316,6 +1327,7 @@ function saveSettings() {
                 showVolumeInfoSaved = (showVolumeInfo === 'true');
                 document.getElementById('settings-panel').style.display = 'none';
                 document.getElementById('main-view').style.display = '';
+                document.getElementById('reload-btn').style.display = '';
                 var btn = document.getElementById('nav-btn');
                 btn.innerHTML = '<img src="/webman/3rdparty/drive_info/images/bt_gear.png" width="20" height="20" alt="">';
                 btn.title = '${_txt_settings}';

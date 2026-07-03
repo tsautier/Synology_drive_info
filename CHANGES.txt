@@ -1,3 +1,24 @@
+v2.0.29
+- Added Volume information and status.
+  - Defaults to enabled but can be disabled in the settings.
+  - Shows Storage Pool status, including if data scrubbing is running.
+- Can now show you the drive information for all local Synology NAS.
+  - It can find all local Synology NAS itself.
+  - Requires all local Synology NAS to have the same Drive Info version installed.
+- Added a Settings menu where you can:
+  - Enable or Disable showing drive info for all local Synology NAS.
+  - Manually add local Synology NAS by hostname, IP and port (in case you only want to see drive information for certain NAS and not all local Synology NAS).
+- Added a Reload button.
+- Added drive temperature.
+- Added SMART information. The text in the Status column for each drive is a link to the SMART info.
+- Added an option in the settings to only show important SMART info.
+- Added percentage to data scrubbing, RAID rebuilding/repairing status.
+- Changed to show the hostname, IP address and model of the Synology that Drive Info is running on instead of "Drive Information".
+- Changed to not show the Permissions ui page during upgrades.
+- Added missing Thai package description.
+- Added translations for all the error messages.
+- Bug for Dutch showing "Show volume information" in English.
+
 v2.0.28
 - Added drive temperature.
 - Added language translations to the SMART info for "Drive", "M.2 Drive", "System Drive" and "USB Drive". 
