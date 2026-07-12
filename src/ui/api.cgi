@@ -58,6 +58,7 @@ if [[ "$_action" == "info" ]]; then
     #_model=$(cat /proc/sys/kernel/syno_hw_version 2>/dev/null || echo "")
     _version=$(grep -m1 'productversion=' /etc.defaults/VERSION 2>/dev/null \
                 | cut -d= -f2 | tr -d '"')
+    _pkg_version=$(synogetkeyvalue /var/packages/drive_info/INFO version)
 
     _model=$(synogetkeyvalue /etc.defaults/synoinfo.conf upnpmodelname 2>/dev/null)
     # Fallback for systems where upnpmodelname is unavailable
@@ -77,8 +78,8 @@ if [[ "$_action" == "info" ]]; then
     printf 'Content-Type: application/json\r\n'
     printf 'Access-Control-Allow-Origin: *\r\n'
     printf '\r\n'
-    printf '{"hostname":"%s","model":"%s","dsm_version":"%s"}\n' \
-        "$_hostname" "$_model" "$_version"
+    printf '{"hostname":"%s","model":"%s","dsm_version":"%s","pkg_version":"%s"}\n' \
+        "$_hostname" "$_model" "$_version" "$_pkg_version"
     exit 0
 fi
 
@@ -1006,13 +1007,18 @@ if [[ -z "$_local_model" && -f /proc/sys/kernel/syno_hw_version ]]; then
 fi
 [[ -z "$_local_model" ]] && _local_model=""
 
+# Get local NAS's Drive Info package version for the heading
+_local_pkg_version=$(synogetkeyvalue /var/packages/drive_info/INFO version 2>/dev/null)
+
 # Get local IP - prefer the default-route interface address
 _local_ip=$(ip route get 1.1.1.1 2>/dev/null | grep -o 'src [0-9.]*' | awk '{print $2}')
 [[ -z "$_local_ip" ]] && _local_ip=$(hostname -i 2>/dev/null | awk '{print $1}')
 
 _local_subtitle=""
-if [[ -n "$_local_ip" || -n "$_local_model" ]]; then
-    _local_subtitle=" <span style=\"font-weight:normal;font-size:13px;color:#999;\"> &nbsp; ${_local_ip} &nbsp; ${_local_model}</span>"
+if [[ -n "$_local_ip" || -n "$_local_model" || -n "$_local_pkg_version" ]]; then
+    _local_subtitle=" <span style=\"font-weight:normal;font-size:13px;color:#999;\"> &nbsp; ${_local_ip} &nbsp; ${_local_model}"
+    [[ -n "$_local_pkg_version" ]] && _local_subtitle+=" &nbsp; v${_local_pkg_version}"
+    _local_subtitle+="</span>"
 fi
 echo "<h2>${_local_hostname}${_local_subtitle}</h2>"
 
@@ -1758,10 +1764,13 @@ function fetchOneDriveInfo(nas) {
             try {
                 var info = JSON.parse(ixhr.responseText);
                 if (info.hostname) {
-                    section.querySelector('h2').innerHTML =
-                        escHtml(info.hostname) +
-                        ' <span style="font-weight:normal;font-size:13px;color:#999;"> &nbsp; ' +
-                        escHtml(ip) + ' &nbsp; ' + escHtml(info.model) + '</span>';
+                    var subtitle = ' <span style="font-weight:normal;font-size:13px;color:#999;"> &nbsp; ' +
+                        escHtml(ip) + ' &nbsp; ' + escHtml(info.model);
+                    if (info.pkg_version) {
+                        subtitle += ' &nbsp; v' + escHtml(info.pkg_version);
+                    }
+                    subtitle += '</span>';
+                    section.querySelector('h2').innerHTML = escHtml(info.hostname) + subtitle;
                 }
             } catch(e) {}
         }
