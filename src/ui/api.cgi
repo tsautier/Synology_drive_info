@@ -166,11 +166,10 @@ if [[ "$_action" == "get_settings" ]]; then
         _ip=$(echo "$_entry" | cut -d, -f2)
         _port=$(echo "$_entry" | cut -d, -f3)
         _en=$(echo "$_entry" | cut -d, -f4)
-        _https=$(echo "$_entry" | cut -d, -f5)
+        _https_port=$(echo "$_entry" | cut -d, -f5)
         [[ "$_en" == "0" ]] && _enabled="false" || _enabled="true"
-        [[ "$_https" == "1" ]] && _use_https="true" || _use_https="false"
         [[ $_first -eq 0 ]] && printf ','
-        printf '{"hostname":"%s","ip":"%s","port":"%s","enabled":%s,"https":%s}' "$_h" "$_ip" "$_port" "$_enabled" "$_use_https"
+        printf '{"hostname":"%s","ip":"%s","port":"%s","enabled":%s,"httpsPort":"%s"}' "$_h" "$_ip" "$_port" "$_enabled" "$_https_port"
         _first=0
     done
     printf ']}\n'
@@ -743,12 +742,12 @@ for (( i=1; i<=_manual_count; i++ )); do
     _ip=$(echo "$_entry" | cut -d, -f2)
     _port=$(echo "$_entry" | cut -d, -f3)
     _en=$(echo "$_entry" | cut -d, -f4)
-    _https=$(echo "$_entry" | cut -d, -f5)
-    # Default enabled=true and https=false if field absent (older entries have fewer fields)
+    _https_port=$(echo "$_entry" | cut -d, -f5)
+    # Default enabled=true if field absent, httpsPort empty if absent
+    # (older entries have fewer fields)
     [[ "$_en" == "0" ]] && _enabled="false" || _enabled="true"
-    [[ "$_https" == "1" ]] && _use_https="true" || _use_https="false"
     [[ $_first -eq 0 ]] && _manual_json+=","
-    _manual_json+="{\"hostname\":\"${_h}\",\"ip\":\"${_ip}\",\"port\":\"${_port}\",\"enabled\":${_enabled},\"https\":${_use_https}}"
+    _manual_json+="{\"hostname\":\"${_h}\",\"ip\":\"${_ip}\",\"port\":\"${_port}\",\"enabled\":${_enabled},\"httpsPort\":\"${_https_port}\"}"
     _first=0
 done
 _manual_json+="]"
@@ -763,8 +762,8 @@ _txt_manual=$(txt settings manual_nas_list "Additional NAS")
 _txt_hostname=$(txt settings hostname "Hostname")
 _txt_ip=$(txt settings ip_address "IP Address")
 #_txt_port=$(txt settings port "Port")
-_txt_port=$(txt settings login_port "Login port")
-_txt_https=$(txt settings use_https "HTTPS")
+_txt_port=$(txt settings login_port "HTTP Port")
+_txt_https_port=$(txt settings https_port "HTTPS Port")
 _txt_remove=$(txt settings remove "Remove")
 _txt_save=$(txt settings save "Save")
 _txt_saved=$(txt settings saved "Saved")
@@ -1461,7 +1460,7 @@ cat << SETTINGSHTML
         <th>${_txt_hostname}</th>
         <th>${_txt_ip}</th>
         <th>${_txt_port}</th>
-        <th>${_txt_https}</th>
+        <th>${_txt_https_port}</th>
         <th></th>
       </tr></thead>
       <tbody id="nas-tbody"></tbody>
@@ -1553,7 +1552,6 @@ function renderTable() {
 
 function makeRow(idx, entry) {
     var enabled = entry.enabled !== false;
-    var useHttps = entry.https === true;
     var tr = document.createElement('tr');
     tr.className = enabled ? '' : 'nas-row-disabled';
     tr.innerHTML =
@@ -1562,8 +1560,7 @@ function makeRow(idx, entry) {
         '<td><input type="text" value="' + esc(entry.hostname) + '" onchange="nasData[' + idx + '].hostname=this.value;"></td>' +
         '<td><input type="text" value="' + esc(entry.ip) + '" onchange="nasData[' + idx + '].ip=this.value;"></td>' +
         '<td class="port-cell"><input type="text" value="' + esc(entry.port) + '" onchange="nasData[' + idx + '].port=this.value;"></td>' +
-        '<td style="text-align:center;"><input type="checkbox" ' + (useHttps ? 'checked' : '') +
-            ' onchange="nasData[' + idx + '].https=this.checked;"></td>' +
+        '<td class="port-cell"><input type="text" value="' + esc(entry.httpsPort) + '" onchange="nasData[' + idx + '].httpsPort=this.value;"></td>' +
         '<td><button class="btn-remove" onclick="removeRow(' + idx + ')">' + txtRemove + '</button></td>';
     return tr;
 }
@@ -1576,7 +1573,7 @@ function toggleRow(idx, checked) {
 }
 
 function addRow() {
-    nasData.push({hostname: '', ip: '', port: '5000', enabled: true, https: false});
+    nasData.push({hostname: '', ip: '', port: '5000', enabled: true, httpsPort: ''});
     renderTable();
     var rows = document.getElementById('nas-tbody').rows;
     if (rows.length > 0) {
@@ -1640,9 +1637,9 @@ function saveSettings() {
         var ip = nasData[i].ip.trim();
         var port = nasData[i].port.trim() || '5000';
         var enabled = nasData[i].enabled !== false;  // default true
-        var https = nasData[i].https === true;
+        var httpsPort = (nasData[i].httpsPort || '').trim();
         if (h === '' && ip === '') continue;
-        valid.push(h + ',' + ip + ',' + port + ',' + (enabled ? '1' : '0') + ',' + (https ? '1' : '0'));
+        valid.push(h + ',' + ip + ',' + port + ',' + (enabled ? '1' : '0') + ',' + httpsPort);
     }
 
     var validSaved = [];
@@ -1651,9 +1648,9 @@ function saveSettings() {
         var sip = (nasDataSaved[k].ip || '').trim();
         var sport = (nasDataSaved[k].port || '').trim() || '5000';
         var sen = nasDataSaved[k].enabled !== false;
-        var shttps = nasDataSaved[k].https === true;
+        var shttpsPort = (nasDataSaved[k].httpsPort || '').trim();
         if (sh === '' && sip === '') continue;
-        validSaved.push(sh + ',' + sip + ',' + sport + ',' + (sen ? '1' : '0') + ',' + (shttps ? '1' : '0'));
+        validSaved.push(sh + ',' + sip + ',' + sport + ',' + (sen ? '1' : '0') + ',' + shttpsPort);
     }
 
     // Reachability of manually-added NAS entries is checked entirely
@@ -1925,13 +1922,19 @@ function fetchOneDriveInfo(nas) {
             port = nas.http_port || 5000;
         }
     } else {
-        // Manually-added entry - single stored port, explicit "Use HTTPS"
-        // checkbox tells us whether that port actually serves HTTPS. Only
-        // switch to HTTPS when the page itself is HTTPS (mixed content is
-        // only a problem in that case) AND the checkbox says this port
-        // supports it.
-        port = nas.port || 5000;
-        protocol = (isHttpsPage && nas.https === true) ? 'https:' : 'http:';
+        // Manually-added entry - user provides separate HTTP and HTTPS port
+        // fields directly (rather than a checkbox), since the two protocols
+        // are frequently on different, independently-configurable ports.
+        // Only switch to HTTPS when the page itself is HTTPS (mixed content
+        // is only a problem in that case) AND an HTTPS port was actually
+        // provided for this entry.
+        if (isHttpsPage && nas.httpsPort) {
+            protocol = 'https:';
+            port = nas.httpsPort || 5001;
+        } else {
+            protocol = 'http:';
+            port = nas.port || 5000;
+        }
     }
     var url = protocol + '//' + ip + ':' + port + '/webman/3rdparty/drive_info/api.cgi';
     var hostname = nas.hostname || ip;
