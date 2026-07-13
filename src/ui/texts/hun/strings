@@ -35,6 +35,9 @@ show_smart_important	=	"Csak a fontos S.M.A.R.T. értékek megjelenítése"
 smart_schedule_enable	=	"Napi S.M.A.R.T. e-mailek ütemezése (éjfél)"
 notify_email	=	"Értesítési e-mail"
 notify_error_only	=	"E-mail küldése csak fontos attribútumok változásakor"
+testing	=	"NAS ellenőrzése..."
+save_failed	=	"A beállítások mentése nem sikerült - kérjük, próbálja újra"
+nas_unreachable	=	"Nem sikerült elérni: %h (%ip:%port) - ellenőrizze az IP-címet és a portot"
 
 [common]
 location	=	Hely
@@ -85,3 +88,4 @@ type	=	Típus
 interface	=	Illesztőfelület
 hotspare	=	Hot Spare
 basic	=	Basic
+eject_usb	=	Kivetés

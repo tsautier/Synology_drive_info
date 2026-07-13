@@ -35,6 +35,9 @@ show_smart_important	=	"重要な S.M.A.R.T. 値のみ表示"
 smart_schedule_enable	=	"毎日の S.M.A.R.T. メールをスケジュール（深夜0時）"
 notify_email	=	"通知メール"
 notify_error_only	=	"重要な属性が変化したときのみメールを送信"
+testing	=	"NAS を確認中..."
+save_failed	=	"設定を保存できませんでした - もう一度お試しください"
+nas_unreachable	=	"%h（%ip:%port）に接続できません - IP アドレスとポートを確認してください"
 
 [common]
 location	=	位置
@@ -85,3 +88,4 @@ type	=	タイプ
 interface	=	インターフェイス
 hotspare	=	Hot Spare
 basic	=	Basic
+eject_usb	=	取り外し

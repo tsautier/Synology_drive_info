@@ -35,6 +35,9 @@ show_smart_important	=	"Visa endast viktiga S.M.A.R.T.-värden"
 smart_schedule_enable	=	"Schemalägg dagliga S.M.A.R.T.-e-postmeddelanden (midnatt)"
 notify_email	=	"Aviserings-e-post"
 notify_error_only	=	"Skicka endast e-post när viktiga attribut har ändrats"
+testing	=	"Kontrollerar NAS..."
+save_failed	=	"Det gick inte att spara inställningarna - försök igen"
+nas_unreachable	=	"Kan inte nå %h på %ip:%port - kontrollera IP-adressen och porten"
 
 [common]
 drive_id	=	Disk-ID
@@ -84,3 +87,4 @@ type	=	Typ
 interface	=	Gränssnitt
 hotspare	=	Hot Spare
 basic	=	Basic
+eject_usb	=	Mata ut

@@ -1,3 +1,8 @@
+v2.1.32
+- Added checking that a Synology exists at the IP/port entered when manually adding a remote Synology NAS.
+- Bug fix for not setting the permissions for creating/deleting scheduled tasks for the email option.
+- Bug fix for USB drive's SMART info being logged with a blank serial number.
+
 v2.1.31
 - Added translations for the new settings options.
 - Changed so package upgrades update the permissions instead of the updated package updating the permissions when it's frst run.

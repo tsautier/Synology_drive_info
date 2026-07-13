@@ -37,6 +37,9 @@ show_smart_important    = "Show only important S.M.A.R.T. values"
 smart_schedule_enable	=	"Schedule daily S.M.A.R.T. emails (midnight)"
 notify_email	=	"Notification email"
 notify_error_only   	=	"Only send email when important attributes have changed"
+testing	=	"Checking NAS..." 
+save_failed	=	"Could not save settings - please try again"
+nas_unreachable	=	"Cannot reach %h at %ip:%port - check the IP address and port"
 
 [common]
 drive	=	Drive
@@ -87,3 +90,4 @@ type	=	Type
 interface	=	Interface
 hotspare	=	Hot Spare
 basic	=	Basic
+eject_usb	=	Eject

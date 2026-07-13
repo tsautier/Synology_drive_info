@@ -17,6 +17,7 @@ rm -f "$TEXTS_DIR/strings" # strings file template
 chmod 755 "$UI_DIR/api.cgi"
 chmod 755 "$UI_DIR/bin/drive_info.sh"
 chmod 755 "$UI_DIR/bin/smart_info.sh"
+chmod 755 "$UI_DIR/bin/check_ip_port.sh"
 chmod 755 "$UI_DIR/bin/syno_discover.py"
 chmod 755 "$UI_DIR/modules/get_text.sh"
 

@@ -35,6 +35,9 @@ show_smart_important	=	"Vis kun vigtige S.M.A.R.T.-værdier"
 smart_schedule_enable	=	"Planlæg daglige S.M.A.R.T.-e-mails (midnat)"
 notify_email	=	"Notifikations-e-mail"
 notify_error_only	=	"Send kun e-mail når vigtige attributter har ændret sig"
+testing	=	"Kontrollerer NAS..."
+save_failed	=	"Kunne ikke gemme indstillinger - prøv venligst igen"
+nas_unreachable	=	"Kan ikke nå %h på %ip:%port - kontroller IP-adressen og porten"
 
 [common]
 location	=	Placering
@@ -85,3 +88,4 @@ type	=	Type
 interface	=	Interface
 hotspare	=	Hot Spare
 basic	=	Basic
+eject_usb	=	Skub ud

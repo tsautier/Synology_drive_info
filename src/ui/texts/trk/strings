@@ -35,6 +35,9 @@ show_smart_important	=	"Yalnızca önemli S.M.A.R.T. değerlerini göster"
 smart_schedule_enable	=	"Günlük S.M.A.R.T. e-postalarını zamanla (gece yarısı)"
 notify_email	=	"Bildirim e-postası"
 notify_error_only	=	"E-postayı yalnızca önemli özellikler değiştiğinde gönder"
+testing	=	"NAS kontrol ediliyor..."
+save_failed	=	"Ayarlar kaydedilemedi - lütfen tekrar deneyin"
+nas_unreachable	=	"%h adresine %ip:%port üzerinden ulaşılamıyor - IP adresini ve portu kontrol edin"
 
 [common]
 location	=	Konum
@@ -85,3 +88,4 @@ type	=	Tip
 interface	=	Arabirim
 hotspare	=	Hot Spare
 basic	=	Basic
+eject_usb	=	Çıkart

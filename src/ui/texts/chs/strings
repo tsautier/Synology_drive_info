@@ -36,6 +36,9 @@ show_smart_important	=	"仅显示重要的 S.M.A.R.T. 值"
 smart_schedule_enable	=	"计划每日 S.M.A.R.T. 邮件（午夜）"
 notify_email	=	"通知邮件"
 notify_error_only	=	"仅在重要属性发生变化时发送邮件"
+testing	=	"正在检查 NAS..."
+save_failed	=	"无法保存设置 - 请重试"
+nas_unreachable	=	"无法访问 %h（%ip:%port）- 请检查 IP 地址和端口"
 
 [common]
 location	=	位置
@@ -86,3 +89,4 @@ type	=	种类
 interface	=	界面
 hotspare	=	Hot Spare
 basic	=	Basic
+eject_usb	=	退出

@@ -370,7 +370,9 @@ show_drive_model(){
     # Get drive serial number with smartctl for USB drives
 #    if [[ -z "$serial" && "${drive:0:4}" != "nvme" ]]; then
     if [[ -z "$serial" ]]; then
-        serial=$("$smartctl" -i -d "$drive_type" /dev/"$drive" | grep Serial | cut -d":" -f2 | xargs)
+        local dtype
+        dtype=$(detect_dtype)
+        serial=$("$smartctl" -i -d "$dtype" /dev/"$drive" | grep Serial | cut -d":" -f2 | xargs)
     fi
 
     # Show drive model and serial

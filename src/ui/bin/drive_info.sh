@@ -75,6 +75,29 @@ if [[ "$dsm" -ge "7" ]]; then
     fi
 fi
 
+# Add task_scheduler entries to sudoers.d if missing
+if [[ "$dsm" -ge "7" ]]; then
+    if ! grep -q "task_scheduler.sh " /etc/sudoers.d/drive_info 2>/dev/null; then
+        pkg=drive_info
+        file=/etc/sudoers.d/drive_info
+        script=/var/packages/drive_info/target/ui/bin/task_scheduler.sh
+        echo "$pkg ALL=(root) NOPASSWD: $script create *" >> "$file"
+        echo "$pkg ALL=(root) NOPASSWD: $script delete *" >> "$file"
+        chmod 0440 "$file"
+    fi
+fi
+
+# Add check_ip_port entry to sudoers.d if missing
+if [[ "$dsm" -ge "7" ]]; then
+    if ! grep -qF "check_ip_port.sh --ip=* --port=*" /etc/sudoers.d/drive_info 2>/dev/null; then
+        pkg=drive_info
+        file=/etc/sudoers.d/drive_info
+        script=/var/packages/drive_info/target/ui/bin/check_ip_port.sh
+        echo "$pkg ALL=(root) NOPASSWD: $script --ip=* --port=*" >> "$file"
+        chmod 0440 "$file"
+    fi
+fi
+
 # Remove duplicate lines from sudoers.d file
 if [[ "$dsm" -ge "7" ]]; then
     awk '!seen[$0]++' /etc/sudoers.d/drive_info > /tmp/drive_info.clean

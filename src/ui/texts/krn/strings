@@ -35,6 +35,9 @@ show_smart_important	=	"중요한 S.M.A.R.T. 값만 표시"
 smart_schedule_enable	=	"매일 S.M.A.R.T. 이메일 예약 (자정)"
 notify_email	=	"알림 이메일"
 notify_error_only	=	"중요한 속성이 변경된 경우에만 이메일 전송"
+testing	=	"NAS 확인 중..."
+save_failed	=	"설정을 저장할 수 없습니다 - 다시 시도해 주세요"
+nas_unreachable	=	"%ip:%port 에서 %h 에 연결할 수 없습니다 - IP 주소와 포트를 확인하세요"
 
 [common]
 location	=	위치
@@ -85,3 +88,4 @@ type	=	유형
 interface	=	인터페이스
 hotspare	=	Hot Spare
 basic	=	Basic
+eject_usb	=	꺼내기

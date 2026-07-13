@@ -5,6 +5,7 @@ PKG_ROOT="/var/packages/${PKG_NAME}"
 TARGET_DIR="${PKG_ROOT}/target"
 SCRIPT="${TARGET_DIR}/ui/bin/drive_info.sh"
 SMART_SCRIPT="${TARGET_DIR}/ui/bin/smart_info.sh"
+CHECK_IP_SCRIPT="${TARGET_DIR}/ui/bin/check_ip_port.sh"
 SUDOERS_FILE="/etc/sudoers.d/${PKG_NAME}"
 
 # Get DSM major version
@@ -59,6 +60,9 @@ if [[ "$_action" == "info" ]]; then
     _version=$(grep -m1 'productversion=' /etc.defaults/VERSION 2>/dev/null \
                 | cut -d= -f2 | tr -d '"')
     _pkg_version=$(synogetkeyvalue /var/packages/drive_info/INFO version)
+    if [[ -n $_pkg_version ]]; then
+        _pkg_version="Drive Info v$_pkg_version"
+    fi
 
     _model=$(synogetkeyvalue /etc.defaults/synoinfo.conf upnpmodelname 2>/dev/null)
     # Fallback for systems where upnpmodelname is unavailable
@@ -172,6 +176,52 @@ fi
 if [[ "$_action" == "save_settings" ]]; then
     printf 'Content-Type: application/json\r\n'
     printf '\r\n'
+
+    #-----------------------------------------------------------------------
+    # Pre-validate manual NAS entries for reachability BEFORE writing
+    # anything. Only entries that actually changed are tested - a NAS that
+    # was already saved and is just temporarily offline shouldn't block
+    # saving unrelated settings. If any changed entry fails, abort the
+    # whole save so we never persist a bad hostname/IP/port combo.
+    #-----------------------------------------------------------------------
+    _val_count=0
+    if [[ "${QUERY_STRING:-}" =~ (^|&)manual_nas_count=([^&]*) ]]; then
+        _val_count="${BASH_REMATCH[2]}"
+    fi
+
+    _val_qs="${QUERY_STRING:-}"
+    _failed_json=""
+    for (( vi=1; vi<=_val_count; vi++ )); do
+        if [[ "$_val_qs" =~ (^|&)"manual_nas${vi}"=([^&]*) ]]; then
+            _val_entry="${BASH_REMATCH[2]}"
+            _val_entry="${_val_entry//%2C/,}"
+            _val_entry="${_val_entry//%2c/,}"
+            _val_entry="${_val_entry//+/ }"
+
+            _val_h=$(echo "$_val_entry" | cut -d, -f1)
+            _val_ip=$(echo "$_val_entry" | cut -d, -f2)
+            _val_port=$(echo "$_val_entry" | cut -d, -f3)
+            _val_enabled=$(echo "$_val_entry" | cut -d, -f4)
+
+            _val_cur=$(synogetkeyvalue "$SETTINGS_CONF" "manual_nas${vi}" 2>/dev/null || echo "")
+            if [[ "$_val_cur" != "$_val_entry" && -n "$_val_ip" && "$_val_enabled" == "1" ]]; then
+                # Confirms an actual Synology DSM is listening at ip:port by
+                # running check_ip_port.sh as root via sudo. Running server-
+                # side avoids the CORS block a browser-based check hit against
+                # DSM 7's own webapi.
+                if ! sudo -n "$CHECK_IP_SCRIPT" --ip="${_val_ip}" --port="${_val_port}" >/dev/null 2>&1; then
+                    _val_h_esc=${_val_h//\"/\\\"}
+                    [[ -n "$_failed_json" ]] && _failed_json+=','
+                    _failed_json+="{\"hostname\":\"${_val_h_esc}\",\"ip\":\"${_val_ip}\",\"port\":\"${_val_port}\"}"
+                fi
+            fi
+        fi
+    done
+
+    if [[ -n "$_failed_json" ]]; then
+        printf '{"ok":false,"error":"nas_unreachable","failed":[%s]}\n' "$_failed_json"
+        exit 0
+    fi
 
     # Parse discover_nas
     _discover_nas="false"
@@ -705,6 +755,9 @@ _txt_saved=$(txt settings saved "Saved")
 _txt_add=$(txt settings add_device "Add a Device")
 _txt_back=$(txt settings back "Back")
 _txt_cancel=$(txt settings cancel "Cancel")
+_txt_testing=$(txt settings testing "Checking NAS...")
+_txt_unreachable=$(txt settings nas_unreachable "Cannot reach %h at %ip:%port - check the IP address and port")
+_txt_save_failed=$(txt settings save_failed "Could not save settings - please try again")
 _txt_reload=$(txt common reload "Reload")
 _txt_slot=$(txt common drive_id "Drive ID")
 _txt_model=$(txt common model "Model")
@@ -851,6 +904,8 @@ tr.nas-row-disabled td.port-cell input { color: #bbb; }
 .save-feedback { display: inline-block; margin-right: auto; color: #1CA600;
                  font-size: 12px; opacity: 0; transition: opacity 0.3s;
                  align-self: center; }
+.save-error { display: none; margin-right: auto; color: #D32F2F;
+              font-size: 12px; align-self: center; max-width: 60%; }
 /* SMART panel */
 .smart-btn { background: none; border: none; cursor: pointer;
              font-family: Verdana, Arial, sans-serif; font-size: 13px;
@@ -1009,6 +1064,9 @@ fi
 
 # Get local NAS's Drive Info package version for the heading
 _local_pkg_version=$(synogetkeyvalue /var/packages/drive_info/INFO version 2>/dev/null)
+if [[ -n $_local_pkg_version ]]; then
+    _local_pkg_version="Drive Info v$_local_pkg_version"
+fi
 
 # Get local IP - prefer the default-route interface address
 _local_ip=$(ip route get 1.1.1.1 2>/dev/null | grep -o 'src [0-9.]*' | awk '{print $2}')
@@ -1017,7 +1075,7 @@ _local_ip=$(ip route get 1.1.1.1 2>/dev/null | grep -o 'src [0-9.]*' | awk '{pri
 _local_subtitle=""
 if [[ -n "$_local_ip" || -n "$_local_model" || -n "$_local_pkg_version" ]]; then
     _local_subtitle=" <span style=\"font-weight:normal;font-size:13px;color:#999;\"> &nbsp; ${_local_ip} &nbsp; ${_local_model}"
-    [[ -n "$_local_pkg_version" ]] && _local_subtitle+=" &nbsp; v${_local_pkg_version}"
+    [[ -n "$_local_pkg_version" ]] && _local_subtitle+=" &nbsp; - &nbsp; ${_local_pkg_version}"
     _local_subtitle+="</span>"
 fi
 echo "<h2>${_local_hostname}${_local_subtitle}</h2>"
@@ -1384,6 +1442,7 @@ cat << SETTINGSHTML
   </div>
 
   <div class="settings-footer">
+    <span class="save-error" id="save-error"></span>
     <span class="save-feedback" id="save-feedback">${_txt_saved} ✓</span>
     <button class="btn-cancel" onclick="cancelSettings()">${_txt_cancel}</button>
     <button class="btn-save" onclick="saveSettings()">${_txt_save}</button>
@@ -1405,6 +1464,9 @@ var smartScheduleEnableSaved = ${_smart_schedule_enable};      // snapshot for C
 var smartNotifyEmailSaved = '${_smart_notify_email_js}';       // snapshot for Cancel
 var smartNotifyErrorOnlySaved = ${_smart_notify_error_only};   // snapshot for Cancel
 var txtRemove = "${_txt_remove}";
+var txtTesting = "${_txt_testing}";
+var txtUnreachable = "${_txt_unreachable}";
+var txtSaveFailed = "${_txt_save_failed}";
 var viewer_lang = '${_lang}';
 var dirty = false;  // true only after settings have been saved
 
@@ -1508,7 +1570,39 @@ function toggleScheduleFields() {
     document.getElementById('schedule-subfields').style.display = enabled ? '' : 'none';
 }
 
+// ---------------------------------------------------------------------------
+// NOTE: an earlier client-side XHR pretest against the remote NAS's own
+// /webapi/query.cgi lived here. Removed - DSM 7 doesn't send
+// Access-Control-Allow-Origin on that endpoint, so the browser silently
+// CORS-blocks it. Reachability is now checked entirely server-side in
+// api.cgi's save_settings action, using wget (unaffected by CORS).
+// ---------------------------------------------------------------------------
+
+function showSaveError(failures) {
+    var el = document.getElementById('save-error');
+    if (!failures || failures.length === 0) {
+        el.textContent = txtSaveFailed;
+    } else {
+        var msgs = failures.map(function(f) {
+            return txtUnreachable
+                .replace('%h', f.hostname || f.ip)
+                .replace('%ip', f.ip)
+                .replace('%port', f.port);
+        });
+        el.textContent = msgs.join(' / ');
+    }
+    el.style.display = 'inline-block';
+}
+
+function hideSaveError() {
+    var el = document.getElementById('save-error');
+    el.style.display = 'none';
+    el.textContent = '';
+}
+
 function saveSettings() {
+    hideSaveError();
+
     var valid = [];
     for (var i = 0; i < nasData.length; i++) {
         var h = nasData[i].hostname.trim();
@@ -1517,6 +1611,48 @@ function saveSettings() {
         var enabled = nasData[i].enabled !== false;  // default true
         if (h === '' && ip === '') continue;
         valid.push(h + ',' + ip + ',' + port + ',' + (enabled ? '1' : '0'));
+    }
+
+    var validSaved = [];
+    for (var k = 0; k < nasDataSaved.length; k++) {
+        var sh = (nasDataSaved[k].hostname || '').trim();
+        var sip = (nasDataSaved[k].ip || '').trim();
+        var sport = (nasDataSaved[k].port || '').trim() || '5000';
+        var sen = nasDataSaved[k].enabled !== false;
+        if (sh === '' && sip === '') continue;
+        validSaved.push(sh + ',' + sip + ',' + sport + ',' + (sen ? '1' : '0'));
+    }
+
+    // Reachability of manually-added NAS entries is checked entirely
+    // server-side (in api.cgi's save_settings action). A client-side XHR
+    // pretest against the remote NAS's own DSM webapi was tried and removed -
+    // it's blocked by CORS on DSM 7, since we don't control that NAS's
+    // response headers. Only api.cgi's own responses can be relied on to
+    // carry the CORS header we need.
+    //
+    // Figure out whether the server will actually have anything to check,
+    // so the button only shows "Checking NAS..." when that's true - mirrors
+    // api.cgi's own changed-and-enabled condition.
+    var willCheckNas = false;
+    for (var t = 0; t < valid.length; t++) {
+        if (validSaved.indexOf(valid[t]) === -1) {
+            var parts = valid[t].split(',');
+            if (parts[1] !== '' && parts[3] === '1') {
+                willCheckNas = true;
+                break;
+            }
+        }
+    }
+
+    doSaveSettings(valid, validSaved, willCheckNas);
+}
+
+function doSaveSettings(valid, validSaved, willCheckNas) {
+    var saveBtn = document.querySelector('.btn-save');
+    var originalLabel = saveBtn.textContent;
+    saveBtn.disabled = true;
+    if (willCheckNas) {
+        saveBtn.textContent = txtTesting;
     }
 
     var discover = document.getElementById('discover_nas').checked ? 'true' : 'false';
@@ -1539,15 +1675,6 @@ function saveSettings() {
 
     // Only a change to show_smart_important needs no full reload, since it only
     // affects the on-demand SMART panel fetch, not the main drive table.
-    var validSaved = [];
-    for (var k = 0; k < nasDataSaved.length; k++) {
-        var sh = (nasDataSaved[k].hostname || '').trim();
-        var sip = (nasDataSaved[k].ip || '').trim();
-        var sport = (nasDataSaved[k].port || '').trim() || '5000';
-        var sen = nasDataSaved[k].enabled !== false;
-        if (sh === '' && sip === '') continue;
-        validSaved.push(sh + ',' + sip + ',' + sport + ',' + (sen ? '1' : '0'));
-    }
     var nasChanged = JSON.stringify(valid) !== JSON.stringify(validSaved);
     var needsReload = (discover !== String(discoverNasSaved)) ||
                        (showVolumeInfo !== String(showVolumeInfoSaved)) ||
@@ -1557,10 +1684,21 @@ function saveSettings() {
     xhr.open('GET', 'api.cgi?' + qs, true);
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
+            var resp = null;
+            try { resp = JSON.parse(xhr.responseText); } catch (e) {}
+            if (resp && resp.ok === false) {
+                // Server-side reachability check failed.
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalLabel;
+                showSaveError(resp.failed || []);
+                return;
+            }
             if (needsReload) {
                 window.location.href = 'api.cgi?_ts=' + new Date().getTime();
             } else {
                 // Update saved snapshots in place and return to main view without reload
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalLabel;
                 showImportantSMART = (showSmartImportant === 'true');
                 nasDataSaved = JSON.parse(JSON.stringify(nasData));
                 discoverNasSaved = (discover === 'true');
@@ -1767,7 +1905,7 @@ function fetchOneDriveInfo(nas) {
                     var subtitle = ' <span style="font-weight:normal;font-size:13px;color:#999;"> &nbsp; ' +
                         escHtml(ip) + ' &nbsp; ' + escHtml(info.model);
                     if (info.pkg_version) {
-                        subtitle += ' &nbsp; v' + escHtml(info.pkg_version);
+                        subtitle += ' &nbsp; - &nbsp; ' + escHtml(info.pkg_version);
                     }
                     subtitle += '</span>';
                     section.querySelector('h2').innerHTML = escHtml(info.hostname) + subtitle;

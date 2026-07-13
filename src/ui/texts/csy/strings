@@ -35,6 +35,9 @@ show_smart_important	=	"Zobrazit pouze důležité hodnoty S.M.A.R.T."
 smart_schedule_enable	=	"Naplánovat denní e-maily S.M.A.R.T. (půlnoc)"
 notify_email	=	"Oznámení e-mailem"
 notify_error_only	=	"Odesílat e-mail pouze při změně důležitých atributů"
+testing	=	"Kontrola NAS..."
+save_failed	=	"Nastavení nelze uložit - zkuste to prosím znovu"
+nas_unreachable	=	"Nelze se připojit k %h na %ip:%port - zkontrolujte IP adresu a port"
 
 [common]
 location	=	Umístění
@@ -85,3 +88,4 @@ type	=	Typ
 interface	=	Rozhraní
 hotspare	=	Hot Spare
 basic	=	Basic
+eject_usb	=	Odebrat

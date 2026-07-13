@@ -35,6 +35,9 @@ show_smart_important	=	"Pokaż tylko ważne wartości S.M.A.R.T."
 smart_schedule_enable	=	"Zaplanuj codzienne e-maile S.M.A.R.T. (północ)"
 notify_email	=	"E-mail z powiadomieniem"
 notify_error_only	=	"Wysyłaj e-mail tylko gdy ważne atrybuty uległy zmianie"
+testing	=	"Sprawdzanie NAS..."
+save_failed	=	"Nie można zapisać ustawień - spróbuj ponownie"
+nas_unreachable	=	"Nie można połączyć się z %h pod adresem %ip:%port - sprawdź adres IP i port"
 
 [common]
 location	=	Lokalizacja
@@ -85,3 +88,4 @@ type	=	Typ
 interface	=	Interfejs
 hotspare	=	Hot Spare
 basic	=	Basic
+eject_usb	=	Wysuń
