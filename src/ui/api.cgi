@@ -1573,7 +1573,7 @@ function toggleRow(idx, checked) {
 }
 
 function addRow() {
-    nasData.push({hostname: '', ip: '', port: '5000', enabled: true, httpsPort: ''});
+    nasData.push({hostname: '', ip: '', port: '5000', enabled: true, httpsPort: '5001'});
     renderTable();
     var rows = document.getElementById('nas-tbody').rows;
     if (rows.length > 0) {

@@ -30,7 +30,7 @@ mac_address	=	MAC Address
 discover_local_nas	=	Find all local Synology NAS
 discovering	=	Discovering NAS...
 manual_nas_list	=	Additional NAS
-login_port	=	Login port
+login_port	=	HTTP port
 cancel	=	Cancel
 show_volume_info	=	"Show volume information"
 show_smart_important    = "Show only important S.M.A.R.T. values"
@@ -40,6 +40,7 @@ notify_error_only   	=	"Only send email when important attributes have changed"
 testing	=	"Checking NAS..." 
 save_failed	=	"Could not save settings - please try again"
 nas_unreachable	=	"Cannot reach %h at %ip:%port - check the IP address and port"
+https_port	=	HTTPS port
 
 [common]
 drive	=	Drive
