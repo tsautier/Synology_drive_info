@@ -1,3 +1,7 @@
+v2.1.33
+- Added support for HTTPS, including a checkbox in settings for manually added NAS.
+- Added DSM version for each NAS.
+
 v2.1.32
 - Added checking that a Synology exists at the IP/port entered when manually adding a remote Synology NAS.
 - Bug fix for not setting the permissions for creating/deleting scheduled tasks for the email option.
