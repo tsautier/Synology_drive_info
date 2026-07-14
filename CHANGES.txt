@@ -1,3 +1,7 @@
+v2.1.38
+- Bug fix for SMART email scheduling.
+  - Enabling "Only send email when important attributes have changed" was changing the user's "Email only important S.M.A.R.T. values" setting.
+
 v2.1.37
 - Added "Email only important S.M.A.R.T. values" option in settings.
 - Added basic email address validation when user clicks Save.

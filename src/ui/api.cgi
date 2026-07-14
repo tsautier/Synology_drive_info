@@ -1800,7 +1800,10 @@ function doSaveSettings(valid, validSaved, willCheckNas) {
     var smartScheduleEnable = document.getElementById('smart_schedule_enable').checked ? 'true' : 'false';
     var smartNotifyEmail = document.getElementById('smart_notify_email').value.trim();
     var smartNotifyErrorOnly = document.getElementById('smart_notify_error_only').checked ? 'true' : 'false';
-    var smartEmailImportant = document.getElementById('smart_email_important').checked ? 'true' : 'false';
+    var errorOnlyChecked = document.getElementById('smart_notify_error_only').checked;
+    var smartEmailImportant = errorOnlyChecked
+        ? (smartEmailImportantPref ? 'true' : 'false')
+        : (document.getElementById('smart_email_important').checked ? 'true' : 'false');
     var qs = 'action=save_settings&discover_nas=' + discover +
              '&show_volume_info=' + showVolumeInfo +
              '&show_smart_important=' + showSmartImportant +
