@@ -1,3 +1,6 @@
+v2.1.36
+- Bug fix for SMART email schedule not being set.
+
 v2.1.35
 - Changed to try HTTP if HTTPS fails, before showing error message.
 
