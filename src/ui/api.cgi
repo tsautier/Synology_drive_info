@@ -1915,6 +1915,11 @@ function fetchOneDriveInfo(nas) {
     var isHttpsPage = (window.location.protocol === 'https:');
     var protocol, port;
     var httpsAvailable;
+    // Fallback protocol/port used only when the primary attempt is HTTPS -
+    // if that fails (most commonly because the browser hasn't been told to
+    // trust this NAS's cert on this port yet), we retry once over HTTP
+    // before showing an error.
+    var fallbackProtocol, fallbackPort;
     if (nas.https_port !== undefined || nas.http_port !== undefined) {
         // Auto-discovered entry - findhostd reports both ports, so just
         // match whichever protocol this page itself was loaded with. If our
@@ -1924,6 +1929,8 @@ function fetchOneDriveInfo(nas) {
         if (isHttpsPage) {
             protocol = 'https:';
             port = nas.https_port || 5001;
+            fallbackProtocol = 'http:';
+            fallbackPort = nas.http_port || 5000;
         } else {
             protocol = 'http:';
             port = nas.http_port || 5000;
@@ -1939,12 +1946,16 @@ function fetchOneDriveInfo(nas) {
         if (isHttpsPage && nas.httpsPort) {
             protocol = 'https:';
             port = nas.httpsPort || 5001;
+            fallbackProtocol = 'http:';
+            fallbackPort = nas.port || 5000;
         } else {
             protocol = 'http:';
             port = nas.port || 5000;
         }
     }
     var url = protocol + '//' + ip + ':' + port + '/webman/3rdparty/drive_info/api.cgi';
+    var fallbackUrl = fallbackProtocol ?
+        (fallbackProtocol + '//' + ip + ':' + fallbackPort + '/webman/3rdparty/drive_info/api.cgi') : null;
     var hostname = nas.hostname || ip;
     var container = document.getElementById('remote-nas-container');
 
@@ -1958,11 +1969,31 @@ function fetchOneDriveInfo(nas) {
         '<div class="nas-spinner"><img src="/webman/3rdparty/drive_info/images/wait_triangle_blue_40p.gif" width="30" height="30" style="vertical-align:middle;margin-right:6px;"><span style="font-size:12px;">${_txt_loading}</span></div>';
     container.appendChild(section);
 
-    // Get accurate hostname/model from action=info first
+    tryFetchInfo(section, url, protocol, isHttpsPage, httpsAvailable, ip, port,
+        fallbackUrl, fallbackProtocol, fallbackPort);
+}
+
+// Requests action=info for one NAS. If it fails and a fallbackUrl was
+// supplied, retries once over that fallback (HTTP) before showing an
+// error. On success, hands off to fetchDriveTable - which gets the same
+// fallback params so a late failure there can still fall back too.
+function tryFetchInfo(section, url, protocol, isHttpsPage, httpsAvailable, ip, port,
+                       fallbackUrl, fallbackProtocol, fallbackPort) {
     var ixhr = new XMLHttpRequest();
     var infoDone = false;  // onreadystatechange and onerror can both fire for one failure
     ixhr.open('GET', url + '?action=info', true);
     ixhr.timeout = 5000;
+
+    function fail() {
+        if (fallbackUrl) {
+            section.dataset.apiBase = fallbackUrl;
+            tryFetchInfo(section, fallbackUrl, fallbackProtocol, isHttpsPage,
+                httpsAvailable, ip, fallbackPort, null, null, null);
+        } else {
+            showRemoteError(section, protocol, isHttpsPage, httpsAvailable, ip, port);
+        }
+    }
+
     ixhr.onreadystatechange = function() {
         if (ixhr.readyState !== 4) return;
         if (infoDone) return;
@@ -1980,18 +2011,19 @@ function fetchOneDriveInfo(nas) {
                     section.querySelector('h2').innerHTML = escHtml(info.hostname) + subtitle;
                 }
             } catch(e) {}
-            fetchDriveTable(section, url, protocol, isHttpsPage, httpsAvailable, ip, port);
+            fetchDriveTable(section, url, protocol, isHttpsPage, httpsAvailable, ip, port,
+                fallbackUrl, fallbackProtocol, fallbackPort);
         } else {
-            // action=info already failed - the drive-table request would
-            // hit the exact same protocol/host/cert problem, so skip it
-            // entirely rather than showing the same error message twice.
-            showRemoteError(section, protocol, isHttpsPage, httpsAvailable, ip, port);
+            // action=info failed on this url - the drive-table request
+            // would hit the exact same protocol/host/cert problem, so
+            // skip it entirely and go straight to fallback/error.
+            fail();
         }
     };
     ixhr.onerror = function() {
         if (infoDone) return;
         infoDone = true;
-        showRemoteError(section, protocol, isHttpsPage, httpsAvailable, ip, port);
+        fail();
     };
     ixhr.send();
 }
@@ -2020,7 +2052,8 @@ function showRemoteError(section, protocol, isHttpsPage, httpsAvailable, ip, por
     section.innerHTML += '<p class="remote-err">' + escHtml(msg) + '</p>';
 }
 
-function fetchDriveTable(section, url, protocol, isHttpsPage, httpsAvailable, ip, port) {
+function fetchDriveTable(section, url, protocol, isHttpsPage, httpsAvailable, ip, port,
+                          fallbackUrl, fallbackProtocol, fallbackPort) {
     var sep = url.indexOf('?') >= 0 ? '&' : '?';
     var fxhr = new XMLHttpRequest();
     var errorShown = false;  // onreadystatechange and onerror can both fire for one failure
@@ -2030,7 +2063,15 @@ function fetchDriveTable(section, url, protocol, isHttpsPage, httpsAvailable, ip
     function showFailure() {
         if (errorShown) return;
         errorShown = true;
-        showRemoteError(section, protocol, isHttpsPage, httpsAvailable, ip, port);
+        if (fallbackUrl) {
+            // action=info succeeded but the table request didn't - unusual,
+            // but still worth the same one-shot HTTP retry.
+            section.dataset.apiBase = fallbackUrl;
+            tryFetchInfo(section, fallbackUrl, fallbackProtocol, isHttpsPage,
+                httpsAvailable, ip, fallbackPort, null, null, null);
+        } else {
+            showRemoteError(section, protocol, isHttpsPage, httpsAvailable, ip, port);
+        }
     }
 
     fxhr.onreadystatechange = function() {
