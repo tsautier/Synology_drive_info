@@ -13,6 +13,8 @@ err_smart_script_missing	=	"未找到 smart_info.sh。"
 err_not_reachable	=	"Drive Info 未安装或无法访问。"
 err_smart_timeout	=	"等待 S.M.A.R.T. 数据超时。NAS 可能正在运行数据清理或奇偶校验检查。请稍后重试。"
 err_smart_failed	=	"请求失败。"
+err_https_cert	=	"无法通过 HTTPS 连接到 %ip:%port。如果此 NAS 使用自签名或不受信任的证书，请直接在此浏览器中打开 https://%ip:%port，接受安全警告，然后重新加载此页面（具体步骤因浏览器而异；如果浏览器不允许绕过此警告，请尝试其他浏览器或安装受信任的证书）。"
+err_needs_https_port	=	"此页面通过 HTTPS 加载，但未为此 NAS 设置 HTTPS 端口，因此浏览器阻止了不安全的 HTTP 请求。请在设置中为此条目添加 HTTPS 端口，或改用 HTTP 访问 Drive Info。"
 
 [settings]
 settings	=	设置
@@ -29,7 +31,6 @@ mac_address	=	MAC 地址
 discover_local_nas	=	查找所有本地 Synology NAS
 discovering	=	正在发现 NAS...
 manual_nas_list	=	其他 NAS
-login_port	=	登录端口
 cancel	=	取消
 show_volume_info	=	"显示卷信息"
 show_smart_important	=	"仅显示重要的 S.M.A.R.T. 值"
@@ -39,6 +40,8 @@ notify_error_only	=	"仅在重要属性发生变化时发送邮件"
 testing	=	"正在检查 NAS..."
 save_failed	=	"无法保存设置 - 请重试"
 nas_unreachable	=	"无法访问 %h（%ip:%port）- 请检查 IP 地址和端口"
+login_port	=	"HTTP 端口"
+https_port	=	"HTTPS 端口"
 
 [common]
 location	=	位置

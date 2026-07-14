@@ -12,6 +12,8 @@ err_smart_script_missing	=	"smart_info.sh não encontrado."
 err_not_reachable	=	"Drive Info não está instalado ou não está acessível."
 err_smart_timeout	=	"Tempo limite esgotado aguardando dados S.M.A.R.T. O NAS pode estar ocupado executando uma limpeza de dados ou verificação de paridade. Tente novamente mais tarde."
 err_smart_failed	=	"Solicitação falhou."
+err_https_cert	=	"Não foi possível conectar via HTTPS a %ip:%port. Se este NAS usa um certificado autoassinado ou não confiável, abra https://%ip:%port diretamente neste navegador, aceite o aviso de segurança e recarregue esta página (os passos exatos variam por navegador; se o seu navegador não permitir ignorar este aviso, tente um navegador diferente ou instale um certificado confiável)."
+err_needs_https_port	=	"Esta página foi carregada via HTTPS, mas nenhuma porta HTTPS está configurada para este NAS, então o navegador bloqueia a solicitação HTTP não segura. Adicione uma porta HTTPS para esta entrada em Configurações ou acesse o Drive Info via HTTP."
 
 [settings]
 settings	=	Configurações
@@ -28,7 +30,6 @@ mac_address	=	Endereço MAC
 discover_local_nas	=	Localizar todos os NAS Synology locais
 discovering	=	Descobrindo NAS...
 manual_nas_list	=	NAS adicionais
-login_port	=	Porta de login
 cancel	=	Cancelar
 show_volume_info	=	"Pokaż informacje o woluminie"
 show_smart_important	=	"Mostrar apenas valores S.M.A.R.T. importantes"
@@ -38,6 +39,8 @@ notify_error_only	=	"Enviar e-mail apenas quando atributos importantes forem alt
 testing	=	"Verificando NAS..."
 save_failed	=	"Não foi possível salvar as configurações - tente novamente"
 nas_unreachable	=	"Não é possível alcançar %h em %ip:%port - verifique o endereço IP e a porta"
+login_port	=	"Porta HTTP"
+https_port	=	"Porta HTTPS"
 
 [common]
 location	=	Localização

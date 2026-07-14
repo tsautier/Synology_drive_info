@@ -12,6 +12,8 @@ err_smart_script_missing	=	"A smart_info.sh nem található."
 err_not_reachable	=	"A Drive Info nincs telepítve vagy nem érhető el."
 err_smart_timeout	=	"Időtúllépés a S.M.A.R.T. adatokra való várakozás közben. Lehet, hogy a NAS éppen adattisztítást vagy paritásellenőrzést végez. Próbálja meg később."
 err_smart_failed	=	"A kérés sikertelen."
+err_https_cert	=	"Nem sikerült HTTPS-en keresztül csatlakozni a következőhöz: %ip:%port. Ha ez a NAS önaláírt vagy nem megbízható tanúsítványt használ, nyissa meg a https://%ip:%port címet közvetlenül ebben a böngészőben, fogadja el a biztonsági figyelmeztetést, majd töltse újra az oldalt (a pontos lépések böngészőnként eltérnek; ha a böngészője nem engedi megkerülni ezt, próbáljon másik böngészőt, vagy telepítsen megbízható tanúsítványt)."
+err_needs_https_port	=	"Ez az oldal HTTPS-en töltődött be, de ehhez a NAS-hoz nincs HTTPS-port beállítva, ezért a böngésző blokkolja a nem biztonságos HTTP-kérést. Adjon hozzá HTTPS-portot ehhez a bejegyzéshez a Beállításokban, vagy tekintse meg a Drive Info-t HTTP-n keresztül."
 
 [settings]
 settings	=	Beállítások
@@ -28,7 +30,6 @@ mac_address	=	MAC-cím
 discover_local_nas	=	Összes helyi Synology NAS megkeresése
 discovering	=	NAS keresése...
 manual_nas_list	=	További NAS
-login_port	=	Bejelentkezési port
 cancel	=	Mégse
 show_volume_info	=	"Kötetinformációk megjelenítése"
 show_smart_important	=	"Csak a fontos S.M.A.R.T. értékek megjelenítése"
@@ -38,6 +39,8 @@ notify_error_only	=	"E-mail küldése csak fontos attribútumok változásakor"
 testing	=	"NAS ellenőrzése..."
 save_failed	=	"A beállítások mentése nem sikerült - kérjük, próbálja újra"
 nas_unreachable	=	"Nem sikerült elérni: %h (%ip:%port) - ellenőrizze az IP-címet és a portot"
+login_port	=	"HTTP-port"
+https_port	=	"HTTPS-port"
 
 [common]
 location	=	Hely

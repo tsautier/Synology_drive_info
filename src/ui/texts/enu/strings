@@ -14,6 +14,8 @@ err_smart_timeout	=	"Timed out waiting for SMART data. The NAS may be busy runni
 err_smart_failed	=	"Request failed."
 err_invalid_device	=	"Invalid device argument."
 err_invalid_option	=	"Invalid option."
+err_https_cert	=	"Could not connect via HTTPS to %ip:%port. If this NAS uses a self-signed or untrusted certificate, open https://%ip:%port directly in this browser, accept the security warning, then reload this page (exact steps vary by browser; if your browser won't let you bypass this, try a different browser or install a trusted certificate)."
+err_needs_https_port	=	"This page is loaded over HTTPS, but no HTTPS port is set for this NAS, so the browser blocks the insecure HTTP request. Add an HTTPS Port for this entry in Settings, or view Drive Info over HTTP instead."
 
 [settings]
 settings	=	Settings
@@ -30,7 +32,6 @@ mac_address	=	MAC Address
 discover_local_nas	=	Find all local Synology NAS
 discovering	=	Discovering NAS...
 manual_nas_list	=	Additional NAS
-login_port	=	HTTP port
 cancel	=	Cancel
 show_volume_info	=	"Show volume information"
 show_smart_important    = "Show only important S.M.A.R.T. values"
@@ -40,6 +41,7 @@ notify_error_only   	=	"Only send email when important attributes have changed"
 testing	=	"Checking NAS..." 
 save_failed	=	"Could not save settings - please try again"
 nas_unreachable	=	"Cannot reach %h at %ip:%port - check the IP address and port"
+login_port	=	HTTP port
 https_port	=	HTTPS port
 
 [common]

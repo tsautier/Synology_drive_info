@@ -12,6 +12,8 @@ err_smart_script_missing	=	"smart_info.sh hittades inte."
 err_not_reachable	=	"Drive Info är inte installerat eller inte nåbart."
 err_smart_timeout	=	"Tidsgränsen överskreds vid väntan på S.M.A.R.T.-data. NAS:en kanske är upptagen med datarensning eller paritetscheck. Försök igen senare."
 err_smart_failed	=	"Begäran misslyckades."
+err_https_cert	=	"Kunde inte ansluta via HTTPS till %ip:%port. Om detta NAS använder ett självsignerat eller ej betrott certifikat, öppna https://%ip:%port direkt i den här webbläsaren, godkänn säkerhetsvarningen och ladda sedan om den här sidan (de exakta stegen varierar beroende på webbläsare; om din webbläsare inte låter dig kringgå detta, prova en annan webbläsare eller installera ett betrott certifikat)."
+err_needs_https_port	=	"Den här sidan laddas via HTTPS, men ingen HTTPS-port är inställd för detta NAS, så webbläsaren blockerar den osäkra HTTP-begäran. Lägg till en HTTPS-port för den här posten i Inställningar eller visa Drive Info via HTTP i stället."
 
 [settings]
 settings	=	Inställningar
@@ -28,7 +30,6 @@ mac_address	=	MAC-adress
 discover_local_nas	=	Hitta alla lokala Synology NAS
 discovering	=	Söker efter NAS...
 manual_nas_list	=	Ytterligare NAS
-login_port	=	Inloggningsport
 cancel	=	Avbryt
 show_volume_info	=	"Visa volyminformation"
 show_smart_important	=	"Visa endast viktiga S.M.A.R.T.-värden"
@@ -38,6 +39,8 @@ notify_error_only	=	"Skicka endast e-post när viktiga attribut har ändrats"
 testing	=	"Kontrollerar NAS..."
 save_failed	=	"Det gick inte att spara inställningarna - försök igen"
 nas_unreachable	=	"Kan inte nå %h på %ip:%port - kontrollera IP-adressen och porten"
+login_port	=	"HTTP-port"
+https_port	=	"HTTPS-port"
 
 [common]
 drive_id	=	Disk-ID

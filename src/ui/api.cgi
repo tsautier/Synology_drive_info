@@ -791,6 +791,8 @@ _txt_smart_schedule_enable=$(txt settings smart_schedule_enable "Schedule daily 
 _txt_notify_email=$(txt settings notify_email "Notification email")
 _txt_notify_error_only=$(txt settings notify_error_only "Only send email when important attributes have changed")
 _txt_not_reachable=$(txt errors err_not_reachable "Drive Info not installed or not reachable.")
+_txt_https_cert=$(txt errors err_https_cert "Could not connect via HTTPS to %ip:%port. If this NAS uses a self-signed or untrusted certificate, open https://%ip:%port directly in this browser, accept the security warning, then reload this page (exact steps vary by browser; if your browser won't let you bypass this, try a different browser or install a trusted certificate).")
+_txt_needs_https_port=$(txt errors err_needs_https_port "This page is loaded over HTTPS, but no HTTPS port is set for this NAS, so the browser blocks the insecure HTTP request. Add an HTTPS port for this entry in Settings, or view Drive Info over HTTP instead.")
 _txt_smart_timeout=$(txt errors err_smart_timeout "Timed out waiting for SMART data. The NAS may be busy (e.g. running a data scrub or parity check) - try again shortly.")
 _txt_smart_failed=$(txt errors err_smart_failed "Request failed.")
 _txt_lang="$_lang"   # or gui_lang, whatever you settle on
@@ -1494,6 +1496,9 @@ var txtRemove = "${_txt_remove}";
 var txtTesting = "${_txt_testing}";
 var txtUnreachable = "${_txt_unreachable}";
 var txtSaveFailed = "${_txt_save_failed}";
+var txtNotReachable = "${_txt_not_reachable}";
+var txtHttpsCert = "${_txt_https_cert}";
+var txtNeedsHttpsPort = "${_txt_needs_https_port}";
 var viewer_lang = '${_lang}';
 var dirty = false;  // true only after settings have been saved
 
@@ -1909,11 +1914,13 @@ function fetchOneDriveInfo(nas) {
     var ip = nas.ip;
     var isHttpsPage = (window.location.protocol === 'https:');
     var protocol, port;
+    var httpsAvailable;
     if (nas.https_port !== undefined || nas.http_port !== undefined) {
         // Auto-discovered entry - findhostd reports both ports, so just
         // match whichever protocol this page itself was loaded with. If our
         // own page is HTTP, there's no mixed-content concern, so keep using
         // HTTP even if an https_port is available.
+        httpsAvailable = !!nas.https_port;
         if (isHttpsPage) {
             protocol = 'https:';
             port = nas.https_port || 5001;
@@ -1928,6 +1935,7 @@ function fetchOneDriveInfo(nas) {
         // Only switch to HTTPS when the page itself is HTTPS (mixed content
         // is only a problem in that case) AND an HTTPS port was actually
         // provided for this entry.
+        httpsAvailable = !!nas.httpsPort;
         if (isHttpsPage && nas.httpsPort) {
             protocol = 'https:';
             port = nas.httpsPort || 5001;
@@ -1946,16 +1954,19 @@ function fetchOneDriveInfo(nas) {
     section.id = 'remote-' + ip.replace(/\./g, '-');
     section.dataset.apiBase = url;
     section.innerHTML = '<h2>' + escHtml(hostname) +
-        ' <span style="font-weight:normal;font-size:13px;color:#999;">(' + escHtml(ip) + ')</span></h2>' +
+        ' <span style="font-weight:normal;font-size:13px;color:#999;"> &nbsp; ' + escHtml(ip) + '</span></h2>' +
         '<div class="nas-spinner"><img src="/webman/3rdparty/drive_info/images/wait_triangle_blue_40p.gif" width="30" height="30" style="vertical-align:middle;margin-right:6px;"><span style="font-size:12px;">${_txt_loading}</span></div>';
     container.appendChild(section);
 
     // Get accurate hostname/model from action=info first
     var ixhr = new XMLHttpRequest();
+    var infoDone = false;  // onreadystatechange and onerror can both fire for one failure
     ixhr.open('GET', url + '?action=info', true);
     ixhr.timeout = 5000;
     ixhr.onreadystatechange = function() {
         if (ixhr.readyState !== 4) return;
+        if (infoDone) return;
+        infoDone = true;
         if (ixhr.status === 200) {
             try {
                 var info = JSON.parse(ixhr.responseText);
@@ -1969,18 +1980,59 @@ function fetchOneDriveInfo(nas) {
                     section.querySelector('h2').innerHTML = escHtml(info.hostname) + subtitle;
                 }
             } catch(e) {}
+            fetchDriveTable(section, url, protocol, isHttpsPage, httpsAvailable, ip, port);
+        } else {
+            // action=info already failed - the drive-table request would
+            // hit the exact same protocol/host/cert problem, so skip it
+            // entirely rather than showing the same error message twice.
+            showRemoteError(section, protocol, isHttpsPage, httpsAvailable, ip, port);
         }
-        fetchDriveTable(section, url);
     };
-    ixhr.onerror = function() { fetchDriveTable(section, url); };
+    ixhr.onerror = function() {
+        if (infoDone) return;
+        infoDone = true;
+        showRemoteError(section, protocol, isHttpsPage, httpsAvailable, ip, port);
+    };
     ixhr.send();
 }
 
-function fetchDriveTable(section, url) {
+// Builds the same contextual error message used whether the failure
+// happened on the action=info request or the drive-table request.
+function showRemoteError(section, protocol, isHttpsPage, httpsAvailable, ip, port) {
+    var sp = section.querySelector('.nas-spinner');
+    if (sp) sp.parentNode.removeChild(sp);
+
+    var msg;
+    if (protocol === 'https:') {
+        // We attempted HTTPS and it failed - most likely an untrusted
+        // certificate (browsers don't expose the specific reason to
+        // page JS, so this is our best-informed guess, not a certainty).
+        msg = txtHttpsCert.replace(/%ip/g, ip).replace(/%port/g, port);
+    } else if (isHttpsPage && !httpsAvailable) {
+        // Page is HTTPS but this entry has no HTTPS port configured, so
+        // the HTTP request was almost certainly blocked as mixed content.
+        msg = txtNeedsHttpsPort;
+    } else {
+        // Same-protocol failure - genuinely ambiguous (wrong port,
+        // firewall, service down, etc.), so keep the generic message.
+        msg = txtNotReachable;
+    }
+    section.innerHTML += '<p class="remote-err">' + escHtml(msg) + '</p>';
+}
+
+function fetchDriveTable(section, url, protocol, isHttpsPage, httpsAvailable, ip, port) {
     var sep = url.indexOf('?') >= 0 ? '&' : '?';
     var fxhr = new XMLHttpRequest();
+    var errorShown = false;  // onreadystatechange and onerror can both fire for one failure
     fxhr.open('GET', url + sep + 'lang=' + encodeURIComponent(viewer_lang), true);
     fxhr.timeout = 15000;
+
+    function showFailure() {
+        if (errorShown) return;
+        errorShown = true;
+        showRemoteError(section, protocol, isHttpsPage, httpsAvailable, ip, port);
+    }
+
     fxhr.onreadystatechange = function() {
         if (fxhr.readyState !== 4) return;
         var sp = section.querySelector('.nas-spinner');
@@ -2000,14 +2052,10 @@ function fetchDriveTable(section, url) {
             html = html.replace(/<h2>[\s\S]*?<\/h2>/gi, '');
             section.innerHTML += html;
         } else {
-            section.innerHTML += '<p class="remote-err">HTTP ' + fxhr.status + '</p>';
+            showFailure();
         }
     };
-    fxhr.onerror = function() {
-        var sp = section.querySelector('.nas-spinner');
-        if (sp) sp.parentNode.removeChild(sp);
-        section.innerHTML += '<p class="remote-err">${_txt_not_reachable}</p>';
-    };
+    fxhr.onerror = showFailure;
     fxhr.send();
 }
 

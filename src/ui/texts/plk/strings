@@ -12,6 +12,8 @@ err_smart_script_missing	=	"Nie znaleziono pliku smart_info.sh."
 err_not_reachable	=	"Drive Info nie jest zainstalowany lub jest niedostępny."
 err_smart_timeout	=	"Przekroczono limit czasu oczekiwania na dane S.M.A.R.T. NAS może być zajęty czyszczeniem danych lub sprawdzaniem parzystości. Spróbuj ponownie później."
 err_smart_failed	=	"Żądanie nie powiodło się."
+err_https_cert	=	"Nie można połączyć się przez HTTPS z %ip:%port. Jeśli ten NAS używa certyfikatu z podpisem własnym lub niezaufanego certyfikatu, otwórz https://%ip:%port bezpośrednio w tej przeglądarce, zaakceptuj ostrzeżenie o zabezpieczeniach, a następnie załaduj ponownie tę stronę (dokładne kroki różnią się w zależności od przeglądarki; jeśli przeglądarka nie pozwala ominąć tego ostrzeżenia, spróbuj użyć innej przeglądarki lub zainstaluj zaufany certyfikat)."
+err_needs_https_port	=	"Ta strona jest ładowana przez HTTPS, ale dla tego NAS nie ustawiono portu HTTPS, więc przeglądarka blokuje niezabezpieczone żądanie HTTP. Dodaj port HTTPS dla tego wpisu w Ustawieniach lub wyświetl Drive Info przez HTTP."
 
 [settings]
 settings	=	Ustawienia
@@ -28,7 +30,6 @@ mac_address	=	Adres MAC
 discover_local_nas	=	Znajdź wszystkie lokalne urządzenia NAS Synology
 discovering	=	Wykrywanie NAS...
 manual_nas_list	=	Dodatkowe NAS
-login_port	=	Port logowania
 cancel	=	Anuluj
 show_volume_info	=	"Pokaż informacje o woluminie"
 show_smart_important	=	"Pokaż tylko ważne wartości S.M.A.R.T."
@@ -38,6 +39,8 @@ notify_error_only	=	"Wysyłaj e-mail tylko gdy ważne atrybuty uległy zmianie"
 testing	=	"Sprawdzanie NAS..."
 save_failed	=	"Nie można zapisać ustawień - spróbuj ponownie"
 nas_unreachable	=	"Nie można połączyć się z %h pod adresem %ip:%port - sprawdź adres IP i port"
+login_port	=	"Port HTTP"
+https_port	=	"Port HTTPS"
 
 [common]
 location	=	Lokalizacja
