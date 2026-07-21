@@ -165,13 +165,15 @@ if [[ "$_action" == "get_settings" ]]; then
         _entry=$(synogetkeyvalue "$SETTINGS_CONF" "manual_nas${i}" 2>/dev/null)
         [[ -z "$_entry" ]] && continue
         _h=$(echo "$_entry" | cut -d, -f1)
-        _ip=$(echo "$_entry" | cut -d, -f2)
+        #_ip=$(echo "$_entry" | cut -d, -f2)
+        _ip_display=$(echo "$_entry" | cut -d, -f2)
         _port=$(echo "$_entry" | cut -d, -f3)
         _en=$(echo "$_entry" | cut -d, -f4)
         _https_port=$(echo "$_entry" | cut -d, -f5)
         [[ "$_en" == "0" ]] && _enabled="false" || _enabled="true"
         [[ $_first -eq 0 ]] && printf ','
-        printf '{"hostname":"%s","ip":"%s","port":"%s","enabled":%s,"httpsPort":"%s"}' "$_h" "$_ip" "$_port" "$_enabled" "$_https_port"
+        #printf '{"hostname":"%s","ip":"%s","port":"%s","enabled":%s,"httpsPort":"%s"}' "$_h" "$_ip" "$_port" "$_enabled" "$_https_port"
+        printf '{"hostname":"%s","ip":"%s","port":"%s","enabled":%s,"httpsPort":"%s"}' "$_h" "$_ip_display" "$_port" "$_enabled" "$_https_port"
         _first=0
     done
     printf ']}\n'
@@ -2055,6 +2057,7 @@ function fetchAllRemote(nasList) {
 
 function fetchOneDriveInfo(nas) {
     var ip = nas.ip;
+    var ipDisplay = nas.ip_display || ip;  // merged '200/202' style string for display only
     var isHttpsPage = (window.location.protocol === 'https:');
     var protocol, port;
     var httpsAvailable;
@@ -2107,8 +2110,9 @@ function fetchOneDriveInfo(nas) {
     section.className = 'remote-section';
     section.id = 'remote-' + ip.replace(/\./g, '-');
     section.dataset.apiBase = url;
+    section.dataset.ipDisplay = ipDisplay;
     section.innerHTML = '<h2>' + escHtml(hostname) +
-        ' <span style="font-weight:normal;font-size:13px;color:#999;"> &nbsp; ' + escHtml(ip) + '</span></h2>' +
+        ' <span style="font-weight:normal;font-size:13px;color:#999;"> &nbsp; ' + escHtml(ipDisplay) + '</span></h2>' +
         '<div class="nas-spinner"><img src="/webman/3rdparty/drive_info/images/wait_triangle_blue_40p.gif" width="30" height="30" style="vertical-align:middle;margin-right:6px;"><span style="font-size:12px;">${_txt_loading}</span></div>';
     container.appendChild(section);
 
@@ -2146,7 +2150,7 @@ function tryFetchInfo(section, url, protocol, isHttpsPage, httpsAvailable, ip, p
                 var info = JSON.parse(ixhr.responseText);
                 if (info.hostname) {
                     var subtitle = ' <span style="font-weight:normal;font-size:13px;color:#999;"> &nbsp; ' +
-                        escHtml(ip) + ' &nbsp; ' + escHtml(info.model) + ' &nbsp; ' + escHtml(info.dsm_version);
+                        escHtml(section.dataset.ipDisplay || ip) + ' &nbsp; ' + escHtml(info.model) + ' &nbsp; ' + escHtml(info.dsm_version);
                     if (info.pkg_version) {
                         subtitle += ' &nbsp; - &nbsp; ' + escHtml(info.pkg_version);
                     }
