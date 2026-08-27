@@ -4,9 +4,7 @@ Synology NAS discovery via findhostd UDP broadcast (port 9999).
 Compatible with Python 2 (DSM 6) and Python 3 (DSM 7).
 
 Uses the syno_finder plaintext protocol (magic 0x12345678_SYNO).
-Requires binding to UDP port 9999 on Windows to receive responses.
-On Linux, findhostd blocks same-subnet queries, so this script is
-intended to be run from a PC, not from a NAS.
+On Windows requires binding to UDP port 9999 to receive responses.
 
 Usage:
     python syno_discover.py

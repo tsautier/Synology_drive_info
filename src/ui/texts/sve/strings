@@ -94,3 +94,5 @@ hotspare	=	Hot Spare
 basic	=	Basic
 eject_usb	=	Mata ut
 esata_drive	=	"eSATA-enhet"
+smart_increased	=	"Ökat med"
+smart_decreased	=	"Minskat med"

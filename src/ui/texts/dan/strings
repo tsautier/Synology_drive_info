@@ -95,3 +95,5 @@ hotspare	=	Hot Spare
 basic	=	Basic
 eject_usb	=	Skub ud
 esata_drive	=	"eSATA-drev"
+smart_increased	=	"Steget med"
+smart_decreased	=	"Faldet med"

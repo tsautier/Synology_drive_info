@@ -1,3 +1,8 @@
+v2.1.46
+- Added translations for SMART "Increased by" and "Decreased by".
+- Bug fix for a couple of translated strings for French and Czech missing a space.
+- Bug fix for not installing python3 in DSM 6 if python3 not installed.
+
 v2.1.45
 - Bug fix for task scheduler sending empty emails for DSM 7.3.2 Update 3 and later. Issue #1
 - Bug fix for HD6500 system drive labels.

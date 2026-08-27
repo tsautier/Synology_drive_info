@@ -268,8 +268,8 @@ if [[ $( whoami ) != "root" ]]; then
     exit 1  # Not running as root
 fi
 
-increased_txt="$(txt common increased "Increased")"
-decreased_txt="$(txt common decreased "Deccreased")"
+increased_txt="$(txt common smart_increased "Increased by")"
+decreased_txt="$(txt common smart_decreased "Deccreased by")"
 
 detect_dtype(){ 
     # Default to SAT
@@ -718,10 +718,12 @@ log_bad(){
         set_section_key_value "$smart_log" "$serial" "$var1_trimmed" "$var2"
     elif [[ $var2 -gt "$previous_att" ]]; then
         set_section_key_value "$smart_log" "$serial" "$var1_trimmed" "$var2"
-        show_increased=$'\\t'"Increased by $((var2 - previous_att))"
+        #show_increased=$'\\t'"Increased by $((var2 - previous_att))"
+        show_increased=$'\\t'"$increased_txt $((var2 - previous_att))"
     elif [[ $var2 -lt "$previous_att" ]]; then
         set_section_key_value "$smart_log" "$serial" "$var1_trimmed" "$var2"
-        show_increased=$'\\t'"Decreased by $((previous_att - var2))"
+        #show_increased=$'\\t'"Decreased by $((previous_att - var2))"
+        show_increased=$'\\t'"$decreased_txt $((previous_att - var2))"
     fi
 
     # Don't show "Increased by #" or " Decreased by #" if first time adding the drive to smart.log
@@ -747,10 +749,12 @@ log_bad_nvme(){
         set_section_key_value "$smart_log" "$serial" "$var1_trimmed" "$var2"
     elif [[ $var2 -gt "$previous_att" ]]; then
         set_section_key_value "$smart_log" "$serial" "$var1_trimmed" "$var2"
-        show_increased=$'\\t'"Increased by $((var2 - previous_att))"
+        #show_increased=$'\\t'"Increased by $((var2 - previous_att))"
+        show_increased=$'\\t'"$increased_txt $((var2 - previous_att))"
     elif [[ $var2 -lt "$previous_att" ]]; then
         set_section_key_value "$smart_log" "$serial" "$var1_trimmed" "$var2"
-        show_increased=$'\\t'"Decreased by $((previous_att - var2))"
+        #show_increased=$'\\t'"Decreased by $((previous_att - var2))"
+        show_increased=$'\\t'"$decreased_txt $((previous_att - var2))"
     fi
 
     # Don't show "Increased by #" or " Decreased by #" if first time adding the drive to smart.log

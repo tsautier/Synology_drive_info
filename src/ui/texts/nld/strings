@@ -95,3 +95,5 @@ hotspare	=	Hot Spare
 basic	=	Basic
 eject_usb	=	Uitwerpen
 esata_drive	=	"eSATA-schijf"
+smart_increased	=	"Gestegen met"
+smart_decreased	=	"Gedaald met"

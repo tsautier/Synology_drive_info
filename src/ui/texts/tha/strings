@@ -95,3 +95,5 @@ hotspare	=	Hot Spare
 basic	=	Basic
 eject_usb	=	ถอด
 esata_drive	=	"ไดรฟ์ Drive"
+smart_increased	=	"เพิ่มขึ้น"
+smart_decreased	=	"ลดลง"

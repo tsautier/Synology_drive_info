@@ -96,3 +96,5 @@ hotspare	=	Hot Spare
 basic	=	Basic
 eject_usb	=	Løs ut
 esata_drive	=	"eSATA-stasjon"
+smart_increased	=	"Økt med"
+smart_decreased	=	"Redusert med"

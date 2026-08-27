@@ -95,3 +95,5 @@ hotspare	=	Hot Spare
 basic	=	Basic
 eject_usb	=	Извлечь
 esata_drive	=	"eSATA-накопитель"
+smart_increased	=	"Увеличилось на"
+smart_decreased	=	"Уменьшилось на"

@@ -95,3 +95,5 @@ hotspare	=	Hot Spare
 basic	=	Basic
 eject_usb	=	Entfernen
 esata_drive	=	"eSATA-Laufwerk"
+smart_increased	=	"Gestiegen um"
+smart_decreased	=	"Gesunken um"

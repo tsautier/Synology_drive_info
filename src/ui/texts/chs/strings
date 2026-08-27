@@ -96,3 +96,5 @@ hotspare	=	Hot Spare
 basic	=	Basic
 eject_usb	=	退出
 esata_drive	=	"eSATA 驱动器"
+smart_increased	=	"增加了"
+smart_decreased	=	"减少了"

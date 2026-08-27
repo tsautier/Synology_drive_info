@@ -95,3 +95,5 @@ hotspare	=	Hot Spare
 basic	=	Basic
 eject_usb	=	Çıkart
 esata_drive	=	"eSATA Sürücü"
+smart_increased	=	"Arttı:"
+smart_decreased	=	"Azaldı:"

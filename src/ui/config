@@ -9,6 +9,8 @@
       "allowMultiInstance": false,
       "allowStandalone": true,
       "allUsers": true,
+      "grantPrivilege": "all",
+      "advanceGrantPrivilege": true
       "texts": "texts",
       "preloadTexts": [
         "app1:title_update",
