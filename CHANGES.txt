@@ -1,3 +1,6 @@
+v2.1.47
+- Bug fix for the Open button not showing and no icon appearing on the desktop.
+
 v2.1.46
 - Added translations for SMART "Increased by" and "Decreased by".
 - Bug fix for a couple of translated strings for French and Czech missing a space.
